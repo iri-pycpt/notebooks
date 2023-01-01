@@ -18,8 +18,8 @@ def colormap_info():
     ret = "Colormaps starting with 'cpt.' come from\nthe International Research Institute\nfor Climate & Society's Climate Predictability Tool\n\nColormaps starting with 'pycpt.' come from PyCPT.\n\nColormaps starting with 'cmc.' come\nfrom cmcrameri, all credit to Fabio Crameri\nsee their message:\n\n" + cmc.__doc__ + '\nAll other colormaps come from matplotlib\nPlease Cite Colormaps accordingly!'
     print(ret)
 
-def prepare_canvas(tailoring=None,predictand='PRCP'):
-    if tailoring != None :
+def prepare_canvas(tailoring=None,predictand='PRCP',type=None):
+    if tailoring != None and (type==None or type=='deterministic'):
         if tailoring == 'Anomaly' :
             if 'PRCP' in predictand:
                 vmin= -200
@@ -58,17 +58,33 @@ def prepare_canvas(tailoring=None,predictand='PRCP'):
             if 'PRCP' in predictand:
                 vmin= 0
                 vmax= 1
+                mark='red'
                 barcolor=cmaps['DL.RAIN_POE_COLORMAP']
             elif any(x in predictand for x in ['TMAX','TMIN','TMEAN','TMED']):
                 vmin= 0
                 vmax= 1
+                mark='black'
                 barcolor=cmaps['DL.TEMP_POE_COLORMAP']
+            return ForTitle, vmin, vmax, mark, barcolor
         else:
             ForTitle='('+tailoring+')'
             if 'PRCP' in predictand:
                 vmin=0
                 vmax=None
                 barcolor=cmaps['DL.RAINFALL_COLORMAP']
+
+        return ForTitle, vmin, vmax, barcolor
+
+    elif type=='probabilistic' :
+        if 'PRCP' in predictand:
+            cmapB=cmaps['cpt.pr_red']
+            cmapN=cmaps['cpt.pr_green']
+            cmapA=cmaps['cpt.pr_blue']
+        elif any(x in predictand for x in ['TMAX','TMIN','TMEAN','TMED']):
+            cmapB=cmaps['pycpy.probability_blue_temp']
+            cmapN=cmaps['pycpy.probability_grey_temp']
+            cmapA=cmaps['pycpy.probability_red_temp']
+        return cmapB, cmapN, cmapA
     else:
         ForTitle=''
         if 'PRCP' in predictand:
@@ -80,7 +96,7 @@ def prepare_canvas(tailoring=None,predictand='PRCP'):
             vmax=40
             barcolor=cmaps['DL.TEMP_COLORS']
 
-    return ForTitle, vmin, vmax, barcolor
+        return ForTitle, vmin, vmax, barcolor
 
 #
 class BGRA(NamedTuple):
@@ -157,6 +173,9 @@ STD_WASP_COLORS="[2970272 2970272 2970272 [2970272 17] 5266050 [5266050 18] 6910
 DM_SPI_2p5_COLORS="[115 [115 24] 230 [230 20] 39142 [39142 18] 8377343 [8377343 22] 65535 [65535 16] 16777215 [16777215 53] 7590510 [7590510 16] 1681940 [1681940 22] 360960 [360960 18] 25600 [25600 20] 17920 [17920 23] 17920]"
 correlation = [(238, 43, 51), (255, 57, 67),(253, 123, 91),(248, 175, 123),(254, 214, 158),(252, 239, 188),(255, 254, 241),(244, 255,255),(187, 252, 255),(160, 235, 255),(123, 210, 255),(89, 179, 238),(63, 136, 254),(52, 86, 254)]
 probability_red = [(151, 30, 39), (198, 48, 55),(227, 63, 63),(236, 79, 71),(238, 127, 95),(244, 174, 126),(248, 214, 160),(253, 241,194),(255, 255, 235)]
+probability_red_temp="[13816575 [11184882 9] [7895290 8] [2631935 17] [1250198 17] 1250198 [1250198 23] 1250198]"
+probability_grey_temp="[16119285 [0 71]]"
+probability_blue_temp="[16445640 [16435889 9] [16425881 8] [16415873 17] [13129045 17] 13129045 [13129045 23]]"
 probability_green = [(208, 238, 203), (178, 208, 173),(148, 178, 143),(118, 148, 113)]
 probability_blue = [(238, 254, 255), (200, 247, 253),(170, 231, 252),(139, 209, 250), (107, 176, 249), (78, 136, 247), (46, 93, 246), (12, 46, 237), (25, 29, 207)]
 probability = [(146, 179, 249), (194, 212, 251), (231, 237, 254), (254,254,165), (255, 253, 84), (248, 203, 70), (242, 157, 57), (237, 111, 45), (188, 39, 26), (117,21,12)]
@@ -199,7 +218,11 @@ cmaps = {
     'cpt.probability': make_cmap(probability, "probability"),
     'cpt.loadings': make_cmap(loadings, "loadings"),
     'pycpt.blue': make_cmap(pycpt_blue, "pycpt_blue"),
-    'pycpy.roc': make_cmap(pycpy_roc, "pycpt_roc",False)
+    'pycpy.roc': make_cmap(pycpy_roc, "pycpt_roc",False),
+    'pycpy.probability_red_temp': LinearSegmentedColormap.from_list("pycpy.probability_red_temp",to_dash_colorscale( probability_red_temp ), N=len(to_dash_colorscale(probability_red_temp))),
+    'pycpy.probability_grey_temp': LinearSegmentedColormap.from_list("pycpy.probability_grey_temp",to_dash_colorscale( probability_grey_temp ), N=len(to_dash_colorscale(probability_grey_temp))),
+    'pycpy.probability_blue_temp': LinearSegmentedColormap.from_list("pycpy.probability_blue_temp",to_dash_colorscale( probability_blue_temp ), N=len(to_dash_colorscale(probability_blue_temp)))
+
 
 }
 
