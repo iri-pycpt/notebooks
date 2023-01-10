@@ -81,9 +81,9 @@ def prepare_canvas(tailoring=None,predictand='PRCP',type=None):
             cmapN=cmaps['cpt.pr_green']
             cmapA=cmaps['cpt.pr_blue']
         elif any(x in predictand for x in ['TMAX','TMIN','TMEAN','TMED']):
-            cmapB=cmaps['pycpy.probability_blue_temp']
-            cmapN=cmaps['pycpy.probability_grey_temp']
-            cmapA=cmaps['pycpy.probability_red_temp']
+            cmapB=cmaps['pycpt.probability_blue_temp']
+            cmapN=cmaps['pycpt.probability_grey_temp']
+            cmapA=cmaps['pycpt.probability_red_temp']
         return cmapB, cmapN, cmapA
     else:
         ForTitle=''
@@ -181,7 +181,7 @@ probability_blue = [(238, 254, 255), (200, 247, 253),(170, 231, 252),(139, 209, 
 probability = [(146, 179, 249), (194, 212, 251), (231, 237, 254), (254,254,165), (255, 253, 84), (248, 203, 70), (242, 157, 57), (237, 111, 45), (188, 39, 26), (117,21,12)]
 loadings = [(0, 18, 134), (0, 35, 241), (66, 116,246), (99, 146, 242), (146, 179, 249), (194, 212, 251), (231, 237, 254), (254,254,165), (255, 253, 84), (248, 203, 70), (242, 157, 57), (237, 111, 45), (188, 39, 26), (117,21,12)]
 pycpt_blue = [(244, 255,255), (187, 252, 255), (160, 235, 255), (123, 210, 255), (89, 179, 238), (63, 136, 254), (52, 86, 254)]
-pycpy_roc = [(5, 48, 97),(7, 52, 102),(10, 58, 111),(12, 62, 117),(15, 69, 126),(18, 73, 132),(21, 79, 141),(24, 86, 149),(26, 90, 155),(30, 96, 164),(32, 100, 170),(36, 106, 174),(40, 111, 176),(43, 115, 178),(47, 120, 181),(49, 124, 183),\
+pycpt_roc = [(5, 48, 97),(7, 52, 102),(10, 58, 111),(12, 62, 117),(15, 69, 126),(18, 73, 132),(21, 79, 141),(24, 86, 149),(26, 90, 155),(30, 96, 164),(32, 100, 170),(36, 106, 174),(40, 111, 176),(43, 115, 178),(47, 120, 181),(49, 124, 183),\
 (53, 129, 185),(56, 132, 187),(60, 138, 190),(64, 143, 193),(67, 147, 195),(76, 152, 198),(82, 156, 200),(91, 162, 203),(101, 168, 206),(107, 172, 208),(116, 178, 211),(122, 182, 214),(132, 188, 217),(138, 192, 219),(147, 197, 222),(154, 201, 224),\
 (159, 203,225),(167, 207, 228),(171, 210, 229),(179, 213, 231),(186, 217, 233),(191, 220, 235),(199, 223, 237),(204, 226, 238),(210, 229, 240),(214, 231, 241),(217, 233, 241),(222, 235, 242),(225, 236, 243),(229, 238, 243),(232, 240, 244),\
 (237, 242, 245),(241, 244, 246),(244, 245, 246),(247, 245, 244),(247, 243, 240),(248, 239, 234),(249, 236, 229),(249, 234, 225),(250, 231, 219),(250, 228, 215),(251, 225, 210),(252, 223, 206),(252, 220, 200),(252, 214, 193),(251, 210, 188),\
@@ -218,10 +218,10 @@ cmaps = {
     'cpt.probability': make_cmap(probability, "probability"),
     'cpt.loadings': make_cmap(loadings, "loadings"),
     'pycpt.blue': make_cmap(pycpt_blue, "pycpt_blue"),
-    'pycpy.roc': make_cmap(pycpy_roc, "pycpt_roc",False),
-    'pycpy.probability_red_temp': LinearSegmentedColormap.from_list("pycpy.probability_red_temp",to_dash_colorscale( probability_red_temp ), N=len(to_dash_colorscale(probability_red_temp))),
-    'pycpy.probability_grey_temp': LinearSegmentedColormap.from_list("pycpy.probability_grey_temp",to_dash_colorscale( probability_grey_temp ), N=len(to_dash_colorscale(probability_grey_temp))),
-    'pycpy.probability_blue_temp': LinearSegmentedColormap.from_list("pycpy.probability_blue_temp",to_dash_colorscale( probability_blue_temp ), N=len(to_dash_colorscale(probability_blue_temp)))
+    'pycpt.roc': make_cmap(pycpt_roc, "pycpt_roc",False),
+    'pycpt.probability_red_temp': LinearSegmentedColormap.from_list("pycpt.probability_red_temp",to_dash_colorscale( probability_red_temp ), N=len(to_dash_colorscale(probability_red_temp))),
+    'pycpt.probability_grey_temp': LinearSegmentedColormap.from_list("pycpt.probability_grey_temp",to_dash_colorscale( probability_grey_temp ), N=len(to_dash_colorscale(probability_grey_temp))),
+    'pycpt.probability_blue_temp': LinearSegmentedColormap.from_list("pycpt.probability_blue_temp",to_dash_colorscale( probability_blue_temp ), N=len(to_dash_colorscale(probability_blue_temp)))
 
 
 }
