@@ -78,8 +78,8 @@ def prepare_canvas(tailoring=None,predictand='PRCP',type=None):
     elif type=='probabilistic' :
         if 'PRCP' in predictand:
             cmapB=cmaps['cpt.pr_red']
-            cmapN=cmaps['cpt.pr_green']
-            cmapA=cmaps['cpt.pr_blue']
+            cmapN=cmaps['cpt.pr_blue']
+            cmapA=cmaps['cpt.pr_green']
         elif any(x in predictand for x in ['TMAX','TMIN','TMEAN','TMED']):
             cmapB=cmaps['pycpt.probability_blue_temp']
             cmapN=cmaps['pycpt.probability_grey_temp']
