@@ -78,8 +78,8 @@ def prepare_canvas(tailoring=None,predictand='PRCP',type=None):
     elif type=='probabilistic' :
         if 'PRCP' in predictand:
             cmapB=cmaps['cpt.pr_red']
-            cmapN=cmaps['cpt.pr_blue']
-            cmapA=cmaps['cpt.pr_green']
+            cmapN=cmaps['cpt.pr_green']
+            cmapA=cmaps['cpt.pr_blue']
         elif any(x in predictand for x in ['TMAX','TMIN','TMEAN','TMED']):
             cmapB=cmaps['pycpt.probability_blue_temp']
             cmapN=cmaps['pycpt.probability_grey_temp']
@@ -213,8 +213,8 @@ cmaps = {
     'DL.DM_SPI_2p5_COLORS':LinearSegmentedColormap.from_list("DM_SPI_2p5_COLORS",to_dash_colorscale( DM_SPI_2p5_COLORS ), N=len(to_dash_colorscale(DM_SPI_2p5_COLORS))),
     'cpt.correlation': make_cmap(correlation,"correlation"),
     'cpt.pr_red': make_cmap(probability_red, "probability_red"),
-    'cpt.pr_green': make_cmap(probability_green, "probability_green"),
-    'cpt.pr_blue': make_cmap(probability_blue, "probability_blue"),
+    'cpt.pr_green': make_cmap(probability_green, "probability_green",False),
+    'cpt.pr_blue': make_cmap(probability_blue, "probability_blue",False),
     'cpt.probability': make_cmap(probability, "probability"),
     'cpt.loadings': make_cmap(loadings, "loadings"),
     'pycpt.blue': make_cmap(pycpt_blue, "pycpt_blue"),
