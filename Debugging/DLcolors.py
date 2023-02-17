@@ -77,9 +77,9 @@ def prepare_canvas(tailoring=None,predictand='PRCP',type=None):
 
     elif type=='probabilistic' :
         if 'PRCP' in predictand:
-            cmapB=cmaps['cpt.pr_red']
-            cmapN=cmaps['cpt.pr_green']
-            cmapA=cmaps['cpt.pr_blue']
+            cmapB=cmaps['pycpt.probability_red_prec']#cmaps['cpt.pr_red']
+            cmapN=cmaps['pycpt.probability_green_prec']#cmaps['DL.RAINFALL_COLORMAP'] #cmaps['cpt.pr_green']
+            cmapA=cmaps['pycpt.probability_blue_prec']#cmaps['cpt.pr_blue']
         elif any(x in predictand for x in ['TMAX','TMIN','TMEAN','TMED']):
             cmapB=cmaps['pycpt.probability_blue_temp']
             cmapN=cmaps['pycpt.probability_grey_temp']
@@ -176,6 +176,9 @@ probability_red = [(151, 30, 39), (198, 48, 55),(227, 63, 63),(236, 79, 71),(238
 probability_red_temp="[13816575 [11184882 9] [7895290 8] [2631935 17] [1250198 17] 1250198 [1250198 23] 1250198]"
 probability_grey_temp="[16119285 [0 71]]"
 probability_blue_temp="[16445640 [16435889 9] [16425881 8] [16415873 17] [13129045 17] 13129045 [13129045 23]]"
+probability_blue_prec="[16777215 [16777215 28] 16776942 [16776942 25] 16644040 [16644040 25] 16574378 [16574378 25] 16437643 [16437643 25] 16363627 [16363627 25] 16222286 [16222286 25] 16145710 [16145710 25] 15543820 [15543820 25] 13573401 [13573401 25] 4163021]"
+probability_red_prec= "[16777215 [16777215 28] 13434623 [13434623 25] 10546687 [10546687 25] 7788798 [7788798 25] 5026557 [5026557 25] 4034046 [4034046 25] 2772987 [2772987 25] 1842146 [1842146 25] 2490558 [2490558 25] 2490752 [2490752 25] 2490752]"
+probability_green_prec="[16777215 [16777215 66] 11001262 [11001262 62] 5545782 [5545782 62] 1852161 [1852161 63] 2490752]"
 probability_green = [(208, 238, 203), (178, 208, 173),(148, 178, 143),(118, 148, 113)]
 probability_blue = [(238, 254, 255), (200, 247, 253),(170, 231, 252),(139, 209, 250), (107, 176, 249), (78, 136, 247), (46, 93, 246), (12, 46, 237), (25, 29, 207)]
 probability = [(146, 179, 249), (194, 212, 251), (231, 237, 254), (254,254,165), (255, 253, 84), (248, 203, 70), (242, 157, 57), (237, 111, 45), (188, 39, 26), (117,21,12)]
@@ -221,7 +224,11 @@ cmaps = {
     'pycpt.roc': make_cmap(pycpt_roc, "pycpt_roc",False),
     'pycpt.probability_red_temp': LinearSegmentedColormap.from_list("pycpt.probability_red_temp",to_dash_colorscale( probability_red_temp ), N=len(to_dash_colorscale(probability_red_temp))),
     'pycpt.probability_grey_temp': LinearSegmentedColormap.from_list("pycpt.probability_grey_temp",to_dash_colorscale( probability_grey_temp ), N=len(to_dash_colorscale(probability_grey_temp))),
-    'pycpt.probability_blue_temp': LinearSegmentedColormap.from_list("pycpt.probability_blue_temp",to_dash_colorscale( probability_blue_temp ), N=len(to_dash_colorscale(probability_blue_temp)))
+    'pycpt.probability_blue_temp': LinearSegmentedColormap.from_list("pycpt.probability_blue_temp",to_dash_colorscale( probability_blue_temp ), N=len(to_dash_colorscale(probability_blue_temp))),
+    'pycpt.probability_blue_prec': LinearSegmentedColormap.from_list("pycpt.probability_blue_prec",to_dash_colorscale( probability_blue_prec ), N=len(to_dash_colorscale(probability_blue_prec))),
+    'pycpt.probability_red_prec': LinearSegmentedColormap.from_list("pycpt.probability_red_prec",to_dash_colorscale( probability_red_prec ), N=len(to_dash_colorscale(probability_red_prec))),
+    'pycpt.probability_green_prec': LinearSegmentedColormap.from_list("pycpt.probability_green_prec",to_dash_colorscale( probability_green_prec ), N=len(to_dash_colorscale(probability_green_prec)))
+
 
 
 }
