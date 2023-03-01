@@ -7,6 +7,21 @@ from typing import NamedTuple
 import numpy as np
 #import math
 
+def graforientation(Horizontal,Vertical):
+    if Horizontal>=Vertical:
+        return 'horizontal'
+    else:
+        return 'vertical'
+
+def MinMaxBar(Min, Max):
+    Min=round(float(Min),3)
+    Max=round(float(Max),3)
+
+    Max=max(abs(Min), Max)
+    Min=Max*-1
+
+    return Min, Max
+
 def make_cmap(colors, name, reverse=True):
     colors = [ (colors[i][0] / 255.0, colors[i][1] / 255.0, colors[i][2] / 255.0) for i in range(len(colors))]
     #print(colors)
