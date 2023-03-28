@@ -41,6 +41,21 @@ def setup(download_args, caseDir):
     return files_root
 
 
+def download_data(
+        predictand_name, predictor_names, download_args, files_root, force_download
+):
+    Y, graph_orientation = download_observations(
+        download_args, files_root, predictand_name, force_download
+    )
+    hindcast_data = download_hindcasts(
+        predictor_names, files_root, force_download, download_args, Y
+    )
+    forecast_data = download_forecasts(
+        predictor_names, files_root, force_download, download_args, Y
+    )
+    return Y, hindcast_data, forecast_data, graph_orientation
+
+
 def download_observations(download_args, files_root, predictand_name, force_download):
     dataDir = files_root / "data"
     # Deal with "Cross-year issues" where either the target season
