@@ -16,35 +16,33 @@ missing_value_flag = -999
 
 
 def setup(download_args, caseDir):
-    case_directory = Path.home() / "Desktop/pycpt" / caseDir
-    case_directory.mkdir(exist_ok=True, parents=True)
-
     # extracting domain boundaries and create house keeping
     domain = download_args["predictor_extent"]
     e, w, n, s = domain.values()
 
     domainFolder = str(w) + "W-" + str(e) + "E" + "_to_" + str(s) + "S-" + str(n) + "N"
 
-    domainDir = Path.home() / "Desktop" / caseDir / domainFolder
-    domainDir.mkdir(exist_ok=True, parents=True)
+    files_root = Path.home() / "Desktop" / caseDir / domainFolder
+    files_root.mkdir(exist_ok=True, parents=True)
 
-    dataDir = Path.home() / "Desktop" / caseDir / domainFolder / "data"
+    dataDir = files_root / "data"
     dataDir.mkdir(exist_ok=True, parents=True)
 
-    figDir = Path.home() / "Desktop" / caseDir / domainFolder / "figures"
+    figDir = files_root / "figures"
     figDir.mkdir(exist_ok=True, parents=True)
 
-    outputDir = Path.home() / "Desktop" / caseDir / domainFolder / "output"
+    outputDir = files_root / "output"
     outputDir.mkdir(exist_ok=True, parents=True)
 
     print(f"Input data will be saved in {dataDir}")
     print(f"Figures will be saved in {figDir}")
     print(f"Output will be saved in {outputDir}")
 
-    return dataDir, outputDir, domainFolder
+    return files_root
 
 
-def download_observations(download_args, dataDir, predictand_name, force_download):
+def download_observations(download_args, files_root, predictand_name, force_download):
+    dataDir = files_root / "data"
     # Deal with "Cross-year issues" where either the target season
     # crosses Jan 1 (eg DJF), or where the forecast initialization is
     # in the calendar year before the start of the target season (eg
@@ -90,7 +88,8 @@ def download_observations(download_args, dataDir, predictand_name, force_downloa
     return Y, graph_orientation
 
 
-def download_hindcasts(predictor_names, dataDir, force_download, download_args, Y):
+def download_hindcasts(predictor_names, files_root, force_download, download_args, Y):
+    dataDir = files_root / "data"
     # download training data
     hindcast_data = []
     for model in predictor_names:
@@ -113,8 +112,8 @@ def download_hindcasts(predictor_names, dataDir, force_download, download_args, 
     return hindcast_data
 
 
-def download_forecasts(predictor_names, dataDir, force_download, download_args, Y):
-    # download forecast data
+def download_forecasts(predictor_names, files_root, force_download, download_args, Y):
+    dataDir = files_root / "data"
     forecast_data = []
     for model in predictor_names:
         if not Path(dataDir / (model + "_f.nc")).is_file() or force_download:
@@ -136,7 +135,7 @@ def download_forecasts(predictor_names, dataDir, force_download, download_args, 
     return forecast_data
 
 
-def plot_skill(predictor_names, skill, MOS, caseDir, domainFolder):
+def plot_skill(predictor_names, skill, MOS, files_root):
     # determnistic skill metrics: 'pearson', 'spearman', 'two_alternative_forced_choice', 'roc_area_under_curve', 'roc_area_above_curve'
     # roc_area_under_curve = ROC Below Normal category
     # roc_area_above_curve = ROC Above Normal category
@@ -196,13 +195,13 @@ def plot_skill(predictor_names, skill, MOS, caseDir, domainFolder):
     # save plots
     figName = MOS + "_models_skillMatrices.png"
     fig.savefig(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / figName,
+        files_root / "figures" / figName,
         bbox_inches="tight",
     )
 
 
 def plot_cca_modes(
-    MOS, predictor_names, pxs, pys, graph_orientation, caseDir, domainFolder
+    MOS, predictor_names, pxs, pys, graph_orientation, files_root
 ):
     nmodes = 3
     cmap = plt.get_cmap("cpt.loadings", 11)
@@ -314,21 +313,13 @@ def plot_cca_modes(
 
                 # save plots
                 figName = MOS + "_" + str(model) + "_CCA_mode_" + str(mode + 1) + ".png"
-                fig.savefig(
-                    Path.home()
-                    / "Desktop"
-                    / caseDir
-                    / domainFolder
-                    / "figures"
-                    / figName,
-                    bbox_inches="tight",
-                )
+                fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
     else:
         print("You will need to set MOS=CCA in order to see CCA Modes")
 
 
 def plot_eof_modes(
-    MOS, predictor_names, pxs, pys, graph_orientation, caseDir, domainFolder
+    MOS, predictor_names, pxs, pys, graph_orientation, files_root
 ):
     nmodes = 5
     cmap = plt.get_cmap("cpt.loadings", 11)
@@ -471,15 +462,7 @@ def plot_eof_modes(
 
                 # save plots
                 figName = MOS + "_" + str(model) + "_EOF_mode_" + str(mode + 1) + ".png"
-                fig.savefig(
-                    Path.home()
-                    / "Desktop"
-                    / caseDir
-                    / domainFolder
-                    / "figures"
-                    / figName,
-                    bbox_inches="tight",
-                )
+                fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
     elif MOS == "PCR":
         for i, model in enumerate(predictor_names):
             for mode in range(nmodes):
@@ -529,15 +512,7 @@ def plot_eof_modes(
 
                 # save plots
                 figName = MOS + "_" + str(model) + "_EOF_mode_" + str(mode + 1) + ".png"
-                fig.savefig(
-                    Path.home()
-                    / "Desktop"
-                    / caseDir
-                    / domainFolder
-                    / "figures"
-                    / figName,
-                    bbox_inches="tight",
-                )
+                fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
     else:
         print("You will need to set MOS=CCA in order to see CCA Modes")
 
@@ -547,8 +522,7 @@ def plot_forecasts(
     predictand_name,
     fcsts,
     graph_orientation,
-    caseDir,
-    domainFolder,
+    files_root,
     predictor_names,
     MOS,
 ):
@@ -588,7 +562,7 @@ def plot_forecasts(
         cartopyInstance.spines["left"].set_color("blue")
 
         matplotlibInstance.savefig(
-            Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png",
+            files_root / "figures" / "Test.png",
             bbox_inches="tight",
         )  # ,pad_inches = 0)
 
@@ -601,7 +575,7 @@ def plot_forecasts(
             predictor_names[i].upper() + " - Probabilistic Forecasts " + ForTitle
         )
         pil_img = Image.open(
-            Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png"
+            files_root / "figures" / "Test.png"
         )
         ax1.set_xticks([])
         ax1.set_yticks([])
@@ -652,7 +626,7 @@ def plot_forecasts(
         )  # ,linewidth=4.5
         art.axes.coastlines(edgecolor="black")  # ,linewidth=4.5
         plt.savefig(
-            Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png",
+            files_root / "figures" / "Test.png",
             bbox_inches="tight",
             pad_inches=0,
         )
@@ -664,7 +638,7 @@ def plot_forecasts(
             predictor_names[i].upper() + " - Deterministic Forecasts " + ForTitle
         )
         pil_img = Image.open(
-            Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png"
+            files_root / "figures" / "Test.png"
         )
         ax2.set_xticks([])
         ax2.set_yticks([])
@@ -683,14 +657,14 @@ def plot_forecasts(
             + ".png"
         )
         fig.savefig(
-            Path.home() / "Desktop" / caseDir / domainFolder / "figures" / figName,
+            files_root / "figures" / figName,
             bbox_inches="tight",
         )
         plt.close()
 
 
 def plot_mme_skill(
-    predictor_names, nextgen_skill, graph_orientation, MOS, caseDir, domainFolder
+    predictor_names, nextgen_skill, graph_orientation, MOS, files_root
 ):
     # skill_metrics = ['pearson', 'spearman', 'generalized_roc', 'rank_probability_skill_score']
     # probabilistic metrics: 'generalized_roc', 'rank_probability_skill_score', 'ignorance'
@@ -765,7 +739,7 @@ def plot_mme_skill(
     # save plots
     figName = MOS + "_ensemble_forecast_skillMatrices.png"
     fig.savefig(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / figName,
+        files_root / "figures" / figName,
         bbox_inches="tight",
     )
 
@@ -776,8 +750,7 @@ def plot_mme_forecasts(
     predictand_name,
     pr_fcst,
     MOS,
-    caseDir,
-    domainFolder,
+    files_root,
     det_fcst,
 ):
     missing_value_flag = -999
@@ -810,7 +783,7 @@ def plot_mme_forecasts(
 
     figName = MOS + "_ensemble_probabilistic-deterministicForecast.png"
     plt.savefig(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png",
+        files_root / "figures" / "Test.png",
         bbox_inches="tight",
     )
 
@@ -821,7 +794,7 @@ def plot_mme_forecasts(
     ax1.set_axis_off()
     ax1.set_title(MOS + "_ensemble" + " - Probabilistic Forecasts " + ForTitle)
     pil_img = Image.open(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png"
+        files_root / "figures" / "Test.png"
     )
     ax1.set_xticks([])
     ax1.set_yticks([])
@@ -856,7 +829,7 @@ def plot_mme_forecasts(
     art.axes.coastlines(edgecolor="black")
 
     plt.savefig(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png",
+        files_root / "figures" / "Test.png",
         bbox_inches="tight",
     )
 
@@ -864,14 +837,14 @@ def plot_mme_forecasts(
     ax2.set_axis_off()
     ax2.set_title(MOS + "_ensemble" + " - Deterministic Forecasts " + ForTitle)
     pil_img = Image.open(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / "Test.png"
+        files_root / "figures" / "Test.png"
     )
     ax2.set_xticks([])
     ax2.set_yticks([])
     ax2.imshow(pil_img)
 
     fig.savefig(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / figName,
+        files_root / "figures" / figName,
         bbox_inches="tight",
     )
     plt.close()
@@ -894,8 +867,7 @@ def plot_mme_flex_forecasts(
     ntrain,
     Y,
     MOS,
-    caseDir,
-    domainFolder,
+    files_root,
 ):
     if point_latitude < float(
         download_args["predictand_extent"]["south"]
@@ -1096,6 +1068,6 @@ def plot_mme_flex_forecasts(
     # save plot
     figName = MOS + "_flexForecast_probExceedence.png"
     plt.savefig(
-        Path.home() / "Desktop" / caseDir / domainFolder / "figures" / figName,
+        files_root / "figures" / figName,
         bbox_inches="tight",
     )
