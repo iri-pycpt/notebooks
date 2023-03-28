@@ -16,6 +16,9 @@ missing_value_flag = -999
 
 
 def setup(download_args, caseDir):
+    case_directory = Path.home() / "Desktop/pycpt" / caseDir
+    case_directory.mkdir(exist_ok=True, parents=True)
+
     # extracting domain boundaries and create house keeping
     domain = download_args["predictor_extent"]
     e, w, n, s = domain.values()
