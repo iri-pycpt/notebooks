@@ -44,7 +44,7 @@ def setup(download_args, caseDir):
 def download_data(
         predictand_name, predictor_names, download_args, files_root, force_download
 ):
-    Y, graph_orientation = download_observations(
+    Y = download_observations(
         download_args, files_root, predictand_name, force_download
     )
     hindcast_data = download_hindcasts(
@@ -53,7 +53,7 @@ def download_data(
     forecast_data = download_forecasts(
         predictor_names, files_root, force_download, download_args, Y
     )
-    return Y, hindcast_data, forecast_data, graph_orientation
+    return Y, hindcast_data, forecast_data
 
 
 def download_observations(download_args, files_root, predictand_name, force_download):
@@ -99,8 +99,7 @@ def download_observations(download_args, files_root, predictand_name, force_down
         Y = xr.open_dataset(dataDir / "{}.nc".format(predictand_name))
         Y = getattr(Y, [i for i in Y.data_vars][0])
 
-    graph_orientation = ce.graphorientation(len(Y["X"]), len(Y["Y"]))
-    return Y, graph_orientation
+    return Y
 
 
 def download_hindcasts(predictor_names, files_root, force_download, download_args, Y):
@@ -216,7 +215,7 @@ def plot_skill(predictor_names, skill, MOS, files_root):
 
 
 def plot_cca_modes(
-    MOS, predictor_names, pxs, pys, graph_orientation, files_root
+    MOS, predictor_names, pxs, pys, files_root
 ):
     nmodes = 3
     cmap = plt.get_cmap("cpt.loadings", 11)
@@ -286,6 +285,11 @@ def plot_cca_modes(
                     )
                 )
 
+                graph_orientation = ce.graphorientation(
+                    len(pys[0]["X"]),
+                    len(pys[0]["Y"])
+                )
+
                 cb = plt.colorbar(art, orientation=graph_orientation)
                 cb.set_label(label="x_cca_loadings", size=14)
                 cb.ax.tick_params(labelsize=12)
@@ -334,12 +338,17 @@ def plot_cca_modes(
 
 
 def plot_eof_modes(
-    MOS, predictor_names, pxs, pys, graph_orientation, files_root
+    MOS, predictor_names, pxs, pys, files_root
 ):
     nmodes = 5
     cmap = plt.get_cmap("cpt.loadings", 11)
     vmin = -10
     vmax = 10
+
+    graph_orientation = ce.graphorientation(
+        len(pys[0]["X"]),
+        len(pys[0]["Y"])
+    )
 
     import matplotlib.ticker as mticker
     import matplotlib.gridspec as gridspec
@@ -536,13 +545,17 @@ def plot_forecasts(
     cpt_args,
     predictand_name,
     fcsts,
-    graph_orientation,
     files_root,
     predictor_names,
     MOS,
 ):
     prob_missing_value_flag = -1
     my_dpi = 100
+
+    graph_orientation = ce.graphorientation(
+        len(fcsts[0]["X"]),
+        len(fcsts[0]["Y"])
+    )
 
     ForTitle, vmin, vmax, barcolor = ce.prepare_canvas(
         cpt_args["tailoring"], predictand_name
@@ -679,7 +692,7 @@ def plot_forecasts(
 
 
 def plot_mme_skill(
-    predictor_names, nextgen_skill, graph_orientation, MOS, files_root
+    predictor_names, nextgen_skill, MOS, files_root
 ):
     # skill_metrics = ['pearson', 'spearman', 'generalized_roc', 'rank_probability_skill_score']
     # probabilistic metrics: 'generalized_roc', 'rank_probability_skill_score', 'ignorance'
@@ -706,6 +719,11 @@ def plot_mme_skill(
 
     cmaps[2].set_under("lightgray")
     cmaps[3].set_under("lightgray")
+
+    graph_orientation = ce.graphorientation(
+        len(nextgen_skill["X"]),
+        len(nextgen_skill["Y"])
+    )
 
     ## Do not modify below
     # fig, ax = plt.subplots(nrows=len(skill_metrics), ncols=1, subplot_kw={'projection':ccrs.PlateCarree()}, figsize=(4, 5*len(skill_metrics)))
@@ -760,7 +778,6 @@ def plot_mme_skill(
 
 
 def plot_mme_forecasts(
-    graph_orientation,
     cpt_args,
     predictand_name,
     pr_fcst,
@@ -772,6 +789,12 @@ def plot_mme_forecasts(
     prob_missing_value_flag = -1
 
     my_dpi = 80
+
+    graph_orientation = ce.graphorientation(
+        len(det_fcst["X"]),
+        len(det_fcst["Y"])
+    )
+
     # fig = plt.figure( figsize=(9*len(fcsts), 5*len(fcsts)), dpi=my_dpi)
     # fig = plt.figure( figsize=(18, 10), dpi=my_dpi)
     if graph_orientation == "horizontal":
@@ -867,7 +890,6 @@ def plot_mme_forecasts(
 
 def plot_mme_flex_forecasts(
     predictand_name,
-    graph_orientation,
     exceedance_prob,
     point_latitude,
     point_longitude,
@@ -884,6 +906,11 @@ def plot_mme_flex_forecasts(
     MOS,
     files_root,
 ):
+    graph_orientation = ce.graphorientation(
+        len(Y["X"]),
+        len(Y["Y"])
+    )
+
     if point_latitude < float(
         download_args["predictand_extent"]["south"]
     ) or point_latitude > float(download_args["predictand_extent"]["north"]):
