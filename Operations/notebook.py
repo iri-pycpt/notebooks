@@ -893,7 +893,7 @@ def plot_mme_flex_forecasts(
     exceedance_prob,
     point_latitude,
     point_longitude,
-    download_args,
+    predictand_extent,
     threshold,
     fcst_scale,
     climo_scale,
@@ -909,39 +909,39 @@ def plot_mme_flex_forecasts(
     if point_latitude is None:
         point_latitude = round(
             (
-                download_args['predictand_extent']['south'] +
-                download_args['predictand_extent']['north']
+                predictand_extent['south'] +
+                predictand_extent['north']
             )/2,
             2
         )
     elif (
-            point_latitude  < float(download_args['predictand_extent']['south'])
+            point_latitude  < float(predictand_extent['south'])
             or
-            point_latitude > float(download_args['predictand_extent']['north'])
+            point_latitude > float(predictand_extent['north'])
     ):
         raise Exception(
             f"point_latitude {point_latitude} is outside predictor domain "
-            f"{download_args['predictand_extent']['south']} to "
-            f"{download_args['predictand_extent']['north']}"
+            f"{predictand_extent['south']} to "
+            f"{predictand_extent['north']}"
         )
 
     if point_longitude is None:
         point_longitude = round(
             (
-                download_args['predictand_extent']['west'] +
-                download_args['predictand_extent']['east']
+                predictand_extent['west'] +
+                predictand_extent['east']
             )/2,
             2
         )
     elif (
-            point_longitude < float(download_args['predictand_extent']['west'])
+            point_longitude < float(predictand_extent['west'])
             or
-            point_longitude > float(download_args['predictand_extent']['east'])
+            point_longitude > float(predictand_extent['east'])
     ):
         raise Exception(
             f"point_longitude {point_longitude} is outside predictor domain "
-            f"{download_args['predictand_extent']['west']} to "
-            f"{download_args['predictand_extent']['east']}"
+            f"{predictand_extent['west']} to "
+            f"{predictand_extent['east']}"
         )
 
     graph_orientation = ce.graphorientation(
@@ -950,24 +950,24 @@ def plot_mme_flex_forecasts(
     )
 
     if point_latitude < float(
-        download_args["predictand_extent"]["south"]
-    ) or point_latitude > float(download_args["predictand_extent"]["north"]):
+        predictand_extent["south"]
+    ) or point_latitude > float(predictand_extent["north"]):
         point_latitude = round(
             (
-                download_args["predictand_extent"]["south"]
-                + download_args["predictand_extent"]["north"]
+                predictand_extent["south"]
+                + predictand_extent["north"]
             )
             / 2,
             2,
         )
 
     if point_longitude < float(
-        download_args["predictand_extent"]["west"]
-    ) or point_longitude > float(download_args["predictand_extent"]["east"]):
+        predictand_extent["west"]
+    ) or point_longitude > float(predictand_extent["east"]):
         point_longitude = round(
             (
-                download_args["predictand_extent"]["west"]
-                + download_args["predictand_extent"]["east"]
+                predictand_extent["west"]
+                + predictand_extent["east"]
             )
             / 2,
             2,
