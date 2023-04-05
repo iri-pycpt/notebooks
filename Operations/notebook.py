@@ -1151,3 +1151,47 @@ def plot_mme_flex_forecasts(
         files_root / "figures" / figName,
         bbox_inches="tight",
     )
+
+
+def construct_mme(fcsts, hcsts, Y, ensemble, predictor_names, cpt_args, outputDir):
+    det_fcst = []
+    det_hcst = []
+    pr_fcst = []
+    pr_hcst = []
+    pev_fcst = []
+    pev_hcst = []
+    for model in ensemble:
+        assert model in predictor_names, "all members of the nextgen ensemble must be in predictor_names - {} is not".format(model)
+        ndx = predictor_names.index(model)
+
+        det_fcst.append(fcsts[ndx].deterministic)
+        det_hcst.append(hcsts[ndx].deterministic)
+        pr_fcst.append(fcsts[ndx].probabilistic)
+        pr_hcst.append(hcsts[ndx].probabilistic)
+        pev_fcst.append(fcsts[ndx].prediction_error_variance)
+        pev_hcst.append(hcsts[ndx].prediction_error_variance)
+
+    det_fcst = xr.concat(det_fcst, 'model').mean('model')
+    det_hcst = xr.concat(det_hcst, 'model').mean('model')
+    pr_fcst = xr.concat(pr_fcst, 'model').mean('model')
+    pr_hcst = xr.concat(pr_hcst, 'model').mean('model')
+    pev_fcst = xr.concat(pev_fcst, 'model').mean('model')
+    pev_hcst = xr.concat(pev_hcst, 'model').mean('model')
+
+    det_hcst.attrs['missing'] = hcsts[0].attrs['missing']
+    det_hcst.attrs['units'] = hcsts[0].attrs['units']
+
+    pr_hcst.attrs['missing'] = hcsts[0].attrs['missing']
+    pr_hcst.attrs['units'] = hcsts[0].attrs['units']
+
+    nextgen_skill_deterministic = cc.deterministic_skill(det_hcst, Y, **cpt_args)
+    nextgen_skill_probabilistic = cc.probabilistic_forecast_verification(pr_hcst, Y, **cpt_args)
+    nextgen_skill = xr.merge([nextgen_skill_deterministic, nextgen_skill_probabilistic])
+
+    # write out files to outputs directory (NB: generic filenaming neeeds improving)
+    det_fcst.to_netcdf(outputDir / ('MME_deterministic_forecasts.nc'))
+    det_hcst.to_netcdf(outputDir / ('MME_deterministic_hindcasts.nc'))
+    pev_hcst.to_netcdf(outputDir / ('MME_hindcast_prediction_error_variance.nc'))
+    nextgen_skill.to_netcdf(outputDir / ('MME_skill_scores.nc'))
+
+    return det_fcst, pr_fcst, pev_fcst, nextgen_skill
