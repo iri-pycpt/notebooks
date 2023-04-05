@@ -1195,3 +1195,84 @@ def construct_mme(fcsts, hcsts, Y, ensemble, predictor_names, cpt_args, outputDi
     nextgen_skill.to_netcdf(outputDir / ('MME_skill_scores.nc'))
 
     return det_fcst, pr_fcst, pev_fcst, nextgen_skill
+
+
+def construct_flex_fcst(MOS, cpt_args, det_fcst, threshold, isPercentile, Y, pev_fcst):
+    # Define transformer based on transform_predictand setting
+    if MOS =='CCA':
+        if str(cpt_args['transform_predictand']).upper() == 'GAMMA':
+            transformer = ce.GammaTransformer()
+        elif str(cpt_args['transform_predictand']).upper() == 'EMPIRICAL':
+            transformer = ce.EmpiricalTransformer()
+        else:
+            transformer = None
+    elif MOS == 'PCR':
+        if str(cpt_args['transform_predictand']).upper() == 'GAMMA':
+            transformer = ce.GammaTransformer()
+        elif str(cpt_args['transform_predictand']).upper() == 'EMPIRICAL':
+            transformer = ce.EmpiricalTransformer()
+        else:
+            transformer = None
+    else:
+        print('FLEX FORECASTS NOT POSSIBLE WITHOUT MOS')
+        return
+
+    # if the transformer is not none, then we used a y-transform in cpt
+    # therefore we have received a prediction error variance file in "units" of (standard normal deviates)^2
+    # and need to transform the forecast mean, in order to calculate probability of exceedance
+
+    if transformer is not None:
+        # we need to normalize the forecast mean here, using the same method as CPT
+        transformer.fit(Y.expand_dims({'M':[0]}))
+        fcst_mu = transformer.transform(det_fcst.expand_dims({'M':[0]}))
+    else:
+        fcst_mu = det_fcst
+
+    if isPercentile:
+        if transformer is None:
+            # if the user provided a percentile theshold, rather than an actual value
+            # and also used no transformation / normalization, 
+            # then we also need to compute the theshold as an actual value
+            threshold = Y.quantile(threshold, dim='T').drop('quantile')
+        else:
+            # if the user used a transformation and gave a percentile threshold, 
+            # we we can set the threshold using the cumulative distribution function 
+            # for the normal distribution N(0, 1)- since thats what the Y data has 
+            # been transformed to
+            threshold = xr.ones_like(fcst_mu).where(~np.isnan(fcst_mu), other=np.nan) * norm.cdf(threshold)
+    else:
+        if transformer is None:
+            # if the user did not use a transform, and also did not use a percentile for a threshold,
+            # we can just use the value directly. but it must be expanded to a 2D datatype
+            threshold = xr.ones_like(fcst_mu).where(~np.isnan(fcst_mu), other=np.nan) * threshold 
+        else: 
+            # if the user used a transformation, but gave a full value and NOT a percentile, 
+            # we must use the transformation that CPT used to transform the threshold onto 
+            # the normal distribution at N(0, 1)
+            threshold = xr.ones_like(fcst_mu).where(~np.isnan(fcst_mu), other=np.nan) * threshold 
+            threshold = transformer.transform(threshold)
+
+    def _xr_tsf(thrs, loc1, scale1, dof1=1):
+        return t.sf(thrs, dof1, loc=loc1, scale=scale1)
+
+    ntrain = Y.shape[list(Y.dims).index('T')]
+    fcst_scale = np.sqrt( (ntrain -2)/ntrain * pev_fcst )
+
+    # if we transformed the forecast data, we should transform the actual Y data to match
+    if transformer is not None:
+        Y2 = transformer.transform(Y.expand_dims({'M':[0]})).fillna(Y.min('T')) * xr.ones_like(Y.mean('T')).where(~np.isnan(Y.mean('T')), other=np.nan)
+        Y2_fill = xr.where(~np.isfinite(Y2), 0, Y2)
+        Y2 = xr.where(np.isfinite(Y2), Y2, Y2_fill)
+    else:
+        Y2 = Y
+    # here we calculate the climatological mean and variance
+    climo_var =  Y2.var('T') # xr.ones_like(fcst_mu).where(~np.isnan(fcst_mu), other=np.nan) if transformer is not None else
+    climo_mu =  Y2.mean('T') # xr.ones_like(fcst_mu).where(~np.isnan(fcst_mu), other=np.nan) if transformer is not None else
+    climo_scale = np.sqrt( (ntrain -2)/ntrain * climo_var )
+
+    # we calculate here, the probability of exceedance by taking 1 - t.cdf()
+    # after having transformed the forecast mean to match the units of the 
+    # prediction error variance, if necessary.
+    exceedance_prob = xr.apply_ufunc( _xr_tsf, threshold, fcst_mu, fcst_scale, input_core_dims=[['X', 'Y'], ['X', 'Y'], ['X', 'Y']], output_core_dims=[['X', 'Y']],keep_attrs=True, kwargs={'dof1':ntrain})
+
+    return exceedance_prob, fcst_scale, climo_scale, fcst_mu, climo_mu, Y2, ntrain, threshold
