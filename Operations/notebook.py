@@ -906,6 +906,44 @@ def plot_mme_flex_forecasts(
     MOS,
     files_root,
 ):
+    if point_latitude is None:
+        point_latitude = round(
+            (
+                download_args['predictand_extent']['south'] +
+                download_args['predictand_extent']['north']
+            )/2,
+            2
+        )
+    elif (
+            point_latitude  < float(download_args['predictand_extent']['south'])
+            or
+            point_latitude > float(download_args['predictand_extent']['north'])
+    ):
+        raise Exception(
+            f"point_latitude {point_latitude} is outside predictor domain "
+            f"{download_args['predictand_extent']['south']} to "
+            f"{download_args['predictand_extent']['north']}"
+        )
+
+    if point_longitude is None:
+        point_longitude = round(
+            (
+                download_args['predictand_extent']['west'] +
+                download_args['predictand_extent']['east']
+            )/2,
+            2
+        )
+    elif (
+            point_longitude < float(download_args['predictand_extent']['west'])
+            or
+            point_longitude > float(download_args['predictand_extent']['east'])
+    ):
+        raise Exception(
+            f"point_longitude {point_longitude} is outside predictor domain "
+            f"{download_args['predictand_extent']['west']} to "
+            f"{download_args['predictand_extent']['east']}"
+        )
+
     graph_orientation = ce.graphorientation(
         len(Y["X"]),
         len(Y["Y"])
