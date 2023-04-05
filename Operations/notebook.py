@@ -181,7 +181,7 @@ def plot_skill(predictor_names, skill, MOS, files_root):
         subplot_kw={"projection": cartopy.crs.PlateCarree()},
         figsize=(5 * len(skill_metrics), 2.5 * len(predictor_names)),
     )
-    if len(predictor_names) == 1:
+    if len(predictor_names) * len(skill_metrics) == 1:
         ax = [ax]
 
     for i, model in enumerate(predictor_names):
@@ -740,7 +740,7 @@ def plot_mme_skill(
         subplot_kw={"projection": ccrs.PlateCarree()},
         figsize=(5 * len(skill_metrics), 1 * len(predictor_names)),
     )
-    if len(predictor_names) == 1:
+    if len(skill_metrics) == 1:
         ax = [ax]
 
     for i in [1]:
