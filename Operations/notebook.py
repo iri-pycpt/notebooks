@@ -148,6 +148,76 @@ def download_forecasts(predictor_names, files_root, force_download, download_arg
         forecast_data.append(F)
     return forecast_data
 
+def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, outputDir, predictor_names):
+    hcsts, fcsts, skill, pxs, pys = [], [], [], [], []
+
+    for i, model_hcst in enumerate(hindcast_data):
+
+
+        if str(MOS).upper() == 'CCA':
+
+            # fit CCA model between X & Y and produce real-time forecasts for F
+            cca_h, cca_rtf, cca_s, cca_px, cca_py = cc.canonical_correlation_analysis(model_hcst, Y, \
+            F=forecast_data[i] ,**cpt_args, cpt_kwargs={"interactive": False} )
+
+    #         fit CCA model again between X & Y, and produce in-sample probabilistic hindcasts
+    #         this is using X in place of F, with the year coordinates changed to n+100 years
+    #         because CPT does not allow you to make forecasts for in-sample data
+            cca_h, cca_f, cca_s, cca_px, cca_py = cc.canonical_correlation_analysis(model_hcst, Y, \
+            F=ce.redate(model_hcst, yeardelta=48), **cpt_args)
+            cca_h = xr.merge([cca_h, ce.redate(cca_f.probabilistic, yeardelta=-48), ce.redate(cca_f.prediction_error_variance, yeardelta=-48)])
+
+    #         # use the in-sample probabilistic hindcasts to perform probabilistic forecast verification
+    #         # warning - this produces unrealistically optimistic values 
+            cca_pfv = cc.probabilistic_forecast_verification(cca_h.probabilistic, Y, **cpt_args)
+            cca_s = xr.merge([cca_s, cca_pfv])
+
+            hcsts.append(cca_h)
+            fcsts.append(cca_rtf)
+            skill.append(cca_s.where(cca_s > -999, other=np.nan))
+            pxs.append(cca_px)
+            pys.append(cca_py)
+
+        elif str(MOS).upper() == 'PCR':
+
+            # fit PCR model between X & Y and produce real-time forecasts for F 
+            pcr_h, pcr_rtf, pcr_s, pcr_px = cc.principal_components_regression(model_hcst, Y, F=forecast_data[i], **cpt_args)
+
+            # fit PCR model again between X & Y, and produce in-sample probabilistic hindcasts 
+            # this is using X in place of F, with the year coordinates changed to n+100 years
+            # because CPT does not allow you to make forecasts for in-sample data
+            pcr_h, pcr_f, pcr_s, pcr_px = cc.principal_components_regression(model_hcst, Y, F=ce.redate(model_hcst, yeardelta=48), **cpt_args)
+            pcr_h = xr.merge([pcr_h, ce.redate(pcr_f.probabilistic, yeardelta=-48), ce.redate(pcr_f.prediction_error_variance, yeardelta=-48)])
+
+            # use the in-sample probabilistic hindcasts to perform probabilistic forecast verification
+            # warning - this produces unrealistically optimistic values 
+            pcr_pfv = cc.probabilistic_forecast_verification(pcr_h.probabilistic, Y, **cpt_args)
+            pcr_s = xr.merge([pcr_s, pcr_pfv])
+            hcsts.append(pcr_h)
+            fcsts.append(pcr_rtf)
+            skill.append(pcr_s.where(pcr_s > -999, other=np.nan))
+            pxs.append(pcr_px)
+        else:
+            # simply compute deterministic skill scores of non-corrected ensemble means 
+            nomos_skill = cc.deterministic_skill(model_hcst, Y, **cpt_args)
+            skill.append(nomos_skill.where(nomos_skill > -999, other=np.nan))
+
+        # choose what data to export here (any of the above results data arrays can be saved to netcdf)
+        if str(MOS).upper() == 'CCA':
+            cca_h.to_netcdf(outputDir /  (predictor_names[i] + '_crossvalidated_cca_hindcasts.nc'))
+            cca_rtf.to_netcdf(outputDir / (predictor_names[i] + '_realtime_cca_forecasts.nc'))
+            cca_s.to_netcdf(outputDir / (predictor_names[i] + '_skillscores_cca.nc'))
+            cca_px.to_netcdf(outputDir / (predictor_names[i] + '_cca_x_spatial_loadings.nc'))
+            cca_py.to_netcdf(outputDir / (predictor_names[i] + '_cca_y_spatial_loadings.nc'))
+        elif str(MOS).upper() == 'PCR':
+            pcr_h.to_netcdf(outputDir /  (predictor_names[i] + '_crossvalidated_pcr_hindcasts.nc'))
+            pcr_rtf.to_netcdf(outputDir / (predictor_names[i] + '_realtime_pcr_forecasts.nc'))
+            pcr_s.to_netcdf(outputDir / (predictor_names[i] + '_skillscores_pcr.nc'))
+            pcr_px.to_netcdf(outputDir / (predictor_names[i] + '_pcr_x_spatial_loadings.nc'))
+        else: 
+            nomos_skill.to_netcdf(outputDir / (predictor_names[i] + '_nomos_skillscores.nc'))
+    return hcsts, fcsts, skill, pxs, pys
+
 
 def plot_skill(predictor_names, skill, MOS, files_root):
     # determnistic skill metrics: 'pearson', 'spearman', 'two_alternative_forced_choice', 'roc_area_under_curve', 'roc_area_above_curve'
