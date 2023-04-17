@@ -219,32 +219,27 @@ def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, outputDir, p
     return hcsts, fcsts, skill, pxs, pys
 
 
-def plot_skill(predictor_names, skill, MOS, files_root):
-    # determnistic skill metrics: 'pearson', 'spearman', 'two_alternative_forced_choice', 'roc_area_under_curve', 'roc_area_above_curve'
-    # roc_area_under_curve = ROC Below Normal category
-    # roc_area_above_curve = ROC Above Normal category
-    # probabilistic skill metrics (in sample): 'generalized_roc', 'ignorance', 'rank_probability_skill_score'
+SKILL_METRICS = {
+    # each entry has the form (colormap, min, max)
 
-    # cmaps = [plt.get_cmap('cpt.correlation', 11), plt.get_cmap('cpt.correlation', 11), plt.get_cmap('RdBu_r', 11), plt.get_cmap('cpt.correlation', 11) ]
-    # limits = [(-1, 1), (-1, 1), (0, 100), (-50, 50)]
+    # deterministic
+    "pearson": (ce.cmaps["cpt_correlation"], -1, 1),
+    "spearman": (ce.cmaps["cpt_correlation"], -1, 1),
+    "two_alternative_forced_choice": (ce.cmaps["pycpt_roc"], 0, 100),
+    "2afc": (ce.cmaps["pycpt_roc"], 0, 100),
+    "roc_area_below_normal": (ce.cmaps["pycpt_roc"], 0, 1),
+    "roc_below": (ce.cmaps["pycpt_roc"], 0, 1),
+    "roc_area_above_normal": (ce.cmaps["pycpt_roc"], 0, 1),
+    "roc_above": (ce.cmaps["pycpt_roc"], 0, 1),
 
-    # deterministic five:
-    skill_metrics = [
-        "pearson",
-        "spearman",
-        "two_alternative_forced_choice",
-        "roc_area_below_normal",
-        "roc_area_above_normal",
-    ]
-    cmaps = [
-        ce.cmaps["cpt_correlation"],
-        ce.cmaps["cpt_correlation"],
-        ce.cmaps["pycpt_roc"],
-        ce.cmaps["pycpt_roc"],
-        ce.cmaps["pycpt_roc"],
-    ]
-    limits = [(-1, 1), (-1, 1), (0, 100), (0, 1), (0, 1)]
+    # probabilistic (in sample):
+    "generalized_roc": (ce.cmaps["pycpt_roc"].set_under("lightgray"), 0, 100),
+    "ignorance": (), # TODO
+    "rank_probability_skill_score": (ce.cmaps["cpt_correlation"].set_under("lightgray"), -50, 50),
+}
 
+
+def plot_skill(predictor_names, skill, MOS, files_root, skill_metrics):
     fig, ax = plt.subplots(
         nrows=len(predictor_names),
         ncols=len(skill_metrics),
@@ -256,10 +251,11 @@ def plot_skill(predictor_names, skill, MOS, files_root):
 
     for i, model in enumerate(predictor_names):
         for j, skill_metric in enumerate(skill_metrics):
+            metric = SKILL_METRICS[skill_metric]
             n = (
                 getattr(skill[i], skill_metric)
                 .where(getattr(skill[i], skill_metric) > missing_value_flag)
-                .plot(ax=ax[i][j], cmap=cmaps[j], vmin=limits[j][0], vmax=limits[j][1])
+                .plot(ax=ax[i][j], cmap=metric[0], vmin=metric[1], vmax=metric[2])
             )
             ax[i][j].coastlines()
             ax[i][j].add_feature(cartopy.feature.BORDERS)
@@ -762,48 +758,13 @@ def plot_forecasts(
 
 
 def plot_mme_skill(
-    predictor_names, nextgen_skill, MOS, files_root
+        predictor_names, nextgen_skill, MOS, files_root, skill_metrics
 ):
-    # skill_metrics = ['pearson', 'spearman', 'generalized_roc', 'rank_probability_skill_score']
-    # probabilistic metrics: 'generalized_roc', 'rank_probability_skill_score', 'ignorance'
-    # deterministic metrics: 16! incl 3 flavors of afc!
-    ##cmaps = [plt.get_cmap('RdBu', 11), plt.get_cmap('RdBu', 11), plt.get_cmap('autumn_r', 10), plt.get_cmap('autumn_r', 11) ]
-    ##limits = [(-1, 1), (-1, 1), (50, 100), (0, 50)]
-    # cmaps = [plt.get_cmap('cpt.correlation', 11), plt.get_cmap('cpt.correlation', 11), plt.get_cmap('RdBu_r', 10), plt.get_cmap('cpt.correlation', 11) ]
-    # limits = [(-1, 1), (-1, 1), (0, 100), (-50, 50)]
-
-    # my choices
-    skill_metrics = [
-        "spearman",
-        "2afc",
-        "generalized_roc",
-        "rank_probability_skill_score",
-    ]
-    cmaps = [
-        ce.cmaps["cpt_correlation"],
-        ce.cmaps["pycpt_roc"],
-        ce.cmaps["pycpt_roc"],
-        ce.cmaps["cpt_correlation"],
-    ]
-    limits = [(-1, 1), (0, 100), (0, 100), (-50, 50)]
-
-    cmaps[2].set_under("lightgray")
-    cmaps[3].set_under("lightgray")
-
     graph_orientation = ce.graphorientation(
         len(nextgen_skill["X"]),
         len(nextgen_skill["Y"])
     )
 
-    ## Do not modify below
-    # fig, ax = plt.subplots(nrows=len(skill_metrics), ncols=1, subplot_kw={'projection':ccrs.PlateCarree()}, figsize=(4, 5*len(skill_metrics)))
-    # for j, skill_metric in enumerate(skill_metrics):
-    #     ax[j].set_title(skill_metric)
-    #     getattr(nextgen_skill, skill_metric).where(getattr(nextgen_skill, skill_metric) > missing_value_flag).plot(ax=ax[j], cmap=cmaps[j], vmin=limits[j][0], vmax=limits[j][1])
-    #     ax[j].coastlines()
-    #     ax[j].add_feature(cartopyFeature.BORDERS)
-
-    # my plotting (taken from individual models, here with 1 row)
     fig, ax = plt.subplots(
         nrows=1,
         ncols=len(skill_metrics),
@@ -815,16 +776,16 @@ def plot_mme_skill(
 
     for i in [1]:
         for j, skill_metric in enumerate(skill_metrics):
+            metric = SKILL_METRICS[skill_metric]
             ax[j].set_title(skill_metric)
-            # n = getattr(skill[i], skill_metric).where(getattr(skill[i], skill_metric) > missing_value_flag).plot(ax=ax[i][j], cmap=cmaps[j], vmin=limits[j][0], vmax=limits[j][1])
             n = (
                 getattr(nextgen_skill, skill_metric)
                 .where(getattr(nextgen_skill, skill_metric) > missing_value_flag)
                 .plot(
                     ax=ax[j],
-                    cmap=cmaps[j],
-                    vmin=limits[j][0],
-                    vmax=limits[j][1],
+                    cmap=metric[0],
+                    vmin=metric[1],
+                    vmax=metric[2],
                     add_colorbar=False,
                 )
             )
@@ -836,8 +797,6 @@ def plot_mme_skill(
             cb = plt.colorbar(n, orientation=graph_orientation)  # location='bottom')
             cb.set_label(label=skill_metric, size=15)
             cb.ax.tick_params(labelsize=12)
-
-    #    ax[i][0].text(-0.07, 0.55, model.upper(), va='bottom', ha='center', rotation='vertical', rotation_mode='anchor', transform=ax[i][0].transAxes)
 
     # save plots
     figName = MOS + "_ensemble_forecast_skillMatrices.png"
