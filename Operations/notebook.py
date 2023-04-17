@@ -15,14 +15,13 @@ import xarray as xr
 missing_value_flag = -999
 
 
-def setup(download_args, caseDir):
+def setup(case_dir, domain):
     # extracting domain boundaries and create house keeping
-    domain = download_args["predictor_extent"]
     e, w, n, s = domain.values()
 
     domainFolder = str(w) + "W-" + str(e) + "E" + "_to_" + str(s) + "S-" + str(n) + "N"
 
-    files_root = Path.home() / "Desktop" / caseDir / domainFolder
+    files_root = case_dir / domainFolder
     files_root.mkdir(exist_ok=True, parents=True)
 
     dataDir = files_root / "data"
@@ -148,7 +147,8 @@ def download_forecasts(predictor_names, files_root, force_download, download_arg
         forecast_data.append(F)
     return forecast_data
 
-def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, outputDir, predictor_names):
+def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, domain_dir, predictor_names):
+    outputDir = domain_dir / "output"
     hcsts, fcsts, skill, pxs, pys = [], [], [], [], []
 
     for i, model_hcst in enumerate(hindcast_data):
@@ -1182,7 +1182,8 @@ def plot_mme_flex_forecasts(
     )
 
 
-def construct_mme(fcsts, hcsts, Y, ensemble, predictor_names, cpt_args, outputDir):
+def construct_mme(fcsts, hcsts, Y, ensemble, predictor_names, cpt_args, domain_dir):
+    outputDir = domain_dir / "output"
     det_fcst = []
     det_hcst = []
     pr_fcst = []
