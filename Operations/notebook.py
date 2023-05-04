@@ -147,7 +147,7 @@ def download_forecasts(predictor_names, files_root, force_download, download_arg
         forecast_data.append(F)
     return forecast_data
 
-def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, domain_dir, predictor_names):
+def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, domain_dir, predictor_names, interactive=False):
     outputDir = domain_dir / "output"
     hcsts, fcsts, skill, pxs, pys = [], [], [], [], []
 
@@ -158,7 +158,7 @@ def evaluate_models(hindcast_data, MOS, Y, forecast_data, cpt_args, domain_dir, 
 
             # fit CCA model between X & Y and produce real-time forecasts for F
             cca_h, cca_rtf, cca_s, cca_px, cca_py = cc.canonical_correlation_analysis(model_hcst, Y, \
-            F=forecast_data[i] ,**cpt_args, cpt_kwargs={"interactive": False} )
+            F=forecast_data[i] ,**cpt_args, cpt_kwargs={"interactive": interactive} )
 
     #         fit CCA model again between X & Y, and produce in-sample probabilistic hindcasts
     #         this is using X in place of F, with the year coordinates changed to n+100 years
