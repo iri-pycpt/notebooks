@@ -236,11 +236,12 @@ SKILL_METRICS = {
     "roc_above": (ce.cmaps["pycpt_roc"], 0, 1),
 
     # probabilistic (in sample):
-    "generalized_roc": (ce.cmaps["pycpt_roc"].set_under("lightgray"), 0, 100),
+    "generalized_roc": (ce.cmaps["pycpt_roc"], 0, 100),
     "ignorance": (), # TODO
-    "rank_probability_skill_score": (ce.cmaps["cpt_correlation"].set_under("lightgray"), -50, 50),
+    "rank_probability_skill_score": (ce.cmaps["cpt_correlation"], -50, 50),
 }
-
+SKILL_METRICS["generalized_roc"][0].set_under("lightgray")
+SKILL_METRICS["rank_probability_skill_score"][0].set_under("lightgray")
 
 def plot_skill(predictor_names, skill, MOS, files_root, skill_metrics):
     fig, ax = plt.subplots(
