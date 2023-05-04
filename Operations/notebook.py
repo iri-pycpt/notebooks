@@ -43,12 +43,15 @@ def setup(case_dir, domain):
 def download_data(
         predictand_name, predictor_names, download_args, files_root, force_download
 ):
+    print('Downloading observed predictand dataset')
     Y = download_observations(
         download_args, files_root, predictand_name, force_download
     )
+    print('Downloading predictor model hindcast datasets')
     hindcast_data = download_hindcasts(
         predictor_names, files_root, force_download, download_args, Y
     )
+    print('Downloading predictor model forecast datasets')
     forecast_data = download_forecasts(
         predictor_names, files_root, force_download, download_args, Y
     )
