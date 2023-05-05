@@ -1225,7 +1225,10 @@ def construct_mme(fcsts, hcsts, Y, ensemble, predictor_names, cpt_args, domain_d
     # write out files to outputs directory (NB: generic filenaming neeeds improving)
     det_fcst.to_netcdf(outputDir / ('MME_deterministic_forecasts.nc'))
     det_hcst.to_netcdf(outputDir / ('MME_deterministic_hindcasts.nc'))
+    pev_fcst.to_netcdf(outputDir / ('MME_forecast_prediction_error_variance.nc'))
     pev_hcst.to_netcdf(outputDir / ('MME_hindcast_prediction_error_variance.nc'))
+    pr_fcst.to_netcdf(outputDir / ('MME_probabilistic_forecasts.nc'))
+    pr_hcst.to_netcdf(outputDir / ('MME_probabilistic_hindcasts.nc'))
     nextgen_skill.to_netcdf(outputDir / ('MME_skill_scores.nc'))
 
     return det_fcst, pr_fcst, pev_fcst, nextgen_skill
