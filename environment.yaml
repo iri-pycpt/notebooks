@@ -1,0 +1,6 @@
+name: pycpt
+channels:
+  - iri-nextgen
+  - conda-forge
+dependencies:
+  - pycpt
