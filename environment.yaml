@@ -4,3 +4,13 @@ channels:
   - conda-forge
 dependencies:
   - pycpt
+
+  # These are dependencies of pycpt, so would be included anyway, but
+  # listing them explicitly allows them to be updated with conda lock
+  # update. This is a workaround for
+  # https://github.com/conda/conda-lock/issues/370
+  - cptbin
+  - cptcore
+  - cptdl
+  - cptextras
+  - cptio
