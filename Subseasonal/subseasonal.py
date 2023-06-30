@@ -764,3 +764,52 @@ def plot_forecasts(
                 bbox_inches="tight",
             )
             plt.close()
+
+def construct_mme(hcsts, Y, fcsts, ensemble, cpt_args, domain_dir):
+    outputDir = domain_dir / "output"
+
+    for model in ensemble:
+        assert model in hcsts['model'], "all members of the nextgen ensemble must be in hindcasts - {} is not".format(model)
+
+    units = hcsts.attrs['units']
+    assert Y.attrs['units'] == units
+    assert fcsts.attrs['units'] == units
+
+    hcsts = hcsts.sel(model=ensemble).mean('model')
+    Y = Y.sel(model=ensemble).mean('model')
+    fcsts = fcsts.sel(model=ensemble).mean('model')
+
+    det_fcst = fcsts['deterministic']
+    det_hcst = hcsts['deterministic']
+    pr_fcst = fcsts['probabilistic']
+    pr_hcst = hcsts['probabilistic']
+    pev_fcst = fcsts['prediction_error_variance']
+    pev_hcst = hcsts['prediction_error_variance']
+
+    nextgen_skill = []
+    for lead_name in hcsts['lead_name'].values:
+        h1 = hcsts.sel(lead_name=lead_name, drop=True)
+        h1.attrs['missing'] = missing_value_flag
+        h1.attrs['units'] = units
+        Y1 = Y.sel(lead_name=lead_name, drop=True)
+        Y1.attrs['missing'] = missing_value_flag
+        Y1.attrs['units'] = units
+
+        nextgen_skill_deterministic = cc.deterministic_skill(h1['deterministic'], Y1, **cpt_args)
+        nextgen_skill_probabilistic = cc.probabilistic_forecast_verification(h1['probabilistic'], Y1, **cpt_args)
+        nextgen_skill.append(
+            xr.merge(
+                [nextgen_skill_deterministic, nextgen_skill_probabilistic]
+            ).assign_coords(lead_name=lead_name))
+    nextgen_skill = xr.concat(nextgen_skill, dim='lead_name')
+
+    # write out files to outputs directory (NB: generic filenaming neeeds improving)
+    det_fcst.to_netcdf(outputDir / ('MME_deterministic_forecasts.nc'))
+    det_hcst.to_netcdf(outputDir / ('MME_deterministic_hindcasts.nc'))
+    pev_fcst.to_netcdf(outputDir / ('MME_forecast_prediction_error_variance.nc'))
+    pev_hcst.to_netcdf(outputDir / ('MME_hindcast_prediction_error_variance.nc'))
+    pr_fcst.to_netcdf(outputDir / ('MME_probabilistic_forecasts.nc'))
+    pr_hcst.to_netcdf(outputDir / ('MME_probabilistic_hindcasts.nc'))
+    nextgen_skill.to_netcdf(outputDir / ('MME_skill_scores.nc'))
+
+    return det_fcst, pr_fcst, pev_fcst, nextgen_skill
