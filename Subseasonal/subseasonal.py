@@ -8,6 +8,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
+from PIL import Image
 from pycpt import missing_value_flag, SKILL_METRICS
 from pathlib import Path
 import xarray as xr
@@ -317,13 +318,12 @@ def plot_skill(skill, MOS, files_root, skill_metrics):
                 transform=ax[i][0].transAxes,
             )
 
-    # TODO
     # save plots
-    # figName = MOS + "_models_skillMatrices.png"
-    # fig.savefig(
-    #     files_root / "figures" / figName,
-    #     bbox_inches="tight",
-    # )
+    figName = MOS + "_models_skillMatrices.png"
+    fig.savefig(
+        files_root / "figures" / figName,
+        bbox_inches="tight",
+    )
 
 
 def plot_eof_modes(
@@ -448,10 +448,9 @@ def plot_eof_modes(
                     map2_ax.add_feature(cartopy.feature.BORDERS)
                     plt.show()
 
-                    # TODO
                     # save plots
-                    # figName = MOS + "_" + str(model) + "_EOF_mode_" + str(mode + 1) + ".png"
-                    # fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
+                    figName = MOS + "_" + str(model) + "_EOF_mode_" + str(int(mode)) + ".png"
+                    fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
     elif MOS == "PCR":
         # TODO update PCR mode for multi-lead
         for i, model in enumerate(predictor_names):
@@ -614,11 +613,154 @@ def plot_cca_modes(
                     map2_ax.add_feature(cartopy.feature.BORDERS)
                     plt.show()
 
-                    # TODO
                     # save plots
-                    # figName = MOS + "_" + str(model) + "_CCA_mode_" + str(mode + 1) + ".png"
-                    # fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
+                    figName = MOS + "_" + str(model) + "_CCA_mode_" + str(int(mode)) + ".png"
+                    fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
     else:
         print("You will need to set MOS=CCA in order to see CCA Modes")
 
 
+
+def plot_forecasts(
+    fcsts,
+    predictand_name,
+    MOS,
+    cpt_args,
+    files_root,
+):
+    prob_missing_value_flag = -1
+    my_dpi = 100
+
+    graph_orientation = ce.graphorientation(
+        len(fcsts["X"]),
+        len(fcsts["Y"])
+    )
+
+    ForTitle, vmin, vmax, barcolor = ce.prepare_canvas(
+        cpt_args["tailoring"], predictand_name
+    )
+    cmapB, cmapN, cmapA = ce.prepare_canvas(None, predictand_name, "probabilistic")
+
+    iidx = 1
+    for i, model in enumerate(fcsts['model'].values):
+        for j, lead_name in enumerate(fcsts['lead_name'].values):
+            f = fcsts.sel(model=model, lead_name=lead_name)
+            if graph_orientation == "horizontal":
+                fig = plt.figure(figsize=(18, 10), facecolor="w", dpi=my_dpi)
+            else:
+                fig = plt.figure(figsize=(15, 12), facecolor="w", dpi=my_dpi)
+
+            matplotlibInstance, cartopyInstance = ce.view_probabilistic(
+                f
+                .probabilistic.where(lambda x: x > prob_missing_value_flag)
+                .rename({"C": "M"})
+                .isel(T=-1)
+                / 100,
+                cmap_an=cmapA,
+                cmap_bn=cmapB,
+                cmap_nn=cmapN,
+                orientation=graph_orientation,
+            )
+            cartopyInstance.add_feature(cartopy.feature.BORDERS, edgecolor="black")
+            cartopyInstance.set_title("")
+            # cartopyInstance.axis("off")
+            allaxes = matplotlibInstance.get_axes()
+
+            cartopyInstance.spines["left"].set_color("blue")
+
+            matplotlibInstance.savefig(
+                files_root / "figures" / "Test.png",
+                bbox_inches="tight",
+            )  # ,pad_inches = 0)
+
+            matplotlibInstance.clf()
+            cartopyInstance.cla()
+
+            ax1 = fig.add_subplot(2, 2, 1)
+            ax1.set_axis_off()
+            ax1.set_title(f"{model.upper()} - Probabilistic Forecasts Lead {lead_name} {ForTitle}")
+            pil_img = Image.open(
+                files_root / "figures" / "Test.png"
+            )
+            ax1.set_xticks([])
+            ax1.set_yticks([])
+            ax1.imshow(pil_img)
+
+            iidx = iidx + 1
+
+            datart = (
+                f
+                .deterministic.where(lambda x: x > missing_value_flag)
+                .isel(T=-1)
+            )
+            if (
+                any(x in predictand_name for x in ["TMAX", "TMIN", "TMEAN", "TMED"])
+                and i == 0 and j == 0
+            ):
+                vmin = round(float(datart.min()) - 0.5 * 2) / 2
+
+            art = datart.plot(
+                figsize=(12, 10),
+                aspect="equal",
+                yincrease=True,
+                subplot_kws={"projection": ccrs.PlateCarree()},
+                # cbar_kwargs={'location': 'bottom',
+                # "label": "Temperature (°C)"
+                #'xticklabels':{'fontsize':100},
+                #            },
+                extend="neither",
+                add_colorbar=False,
+                transform=ccrs.PlateCarree(),
+                cmap=barcolor,
+                vmin=vmin,
+                vmax=vmax,
+            )
+
+            plt.title("")
+            # plt.axis("off")
+            art.axes.coastlines()
+
+            cb = plt.colorbar(art, orientation=graph_orientation)  # location='bottom')
+            cb.set_label(
+                label=datart.attrs["field"] + " [" + datart.attrs["units"] + "]", size=16
+            )
+            cb.ax.tick_params(labelsize=15)
+
+            art.axes.add_feature(
+                cartopy.feature.BORDERS, edgecolor="black"
+            )  # ,linewidth=4.5
+            art.axes.coastlines(edgecolor="black")  # ,linewidth=4.5
+            plt.savefig(
+                files_root / "figures" / "Test.png",
+                bbox_inches="tight",
+                pad_inches=0,
+            )
+
+            ax2 = fig.add_subplot(2, 2, 2)
+            ax2.set_axis_off()
+
+            ax2.set_title(f"{model.upper()} - Deterministic Forecasts Lead {lead_name} {ForTitle}")
+            pil_img = Image.open(
+                files_root / "figures" / "Test.png"
+            )
+            ax2.set_xticks([])
+            ax2.set_yticks([])
+            ax2.imshow(pil_img)  # , aspect=4 1.45 , extent=[0, 1.45, 1.5, 0],
+
+            iidx = iidx + 1
+
+            # save plots
+            figName = (
+                MOS
+                + ForTitle.replace(" ", "_")
+                + "["
+                + model
+                + "]"
+                + "[determinstic-probabilistic]-Forecast"
+                + ".png"
+            )
+            fig.savefig(
+                files_root / "figures" / figName,
+                bbox_inches="tight",
+            )
+            plt.close()
