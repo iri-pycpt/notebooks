@@ -789,8 +789,10 @@ def construct_mme(hcsts, Y, fcsts, ensemble, cpt_args, domain_dir):
     nextgen_skill = []
     for lead_name in hcsts['lead_name'].values:
         h1 = hcsts.sel(lead_name=lead_name, drop=True)
-        h1.attrs['missing'] = missing_value_flag
-        h1.attrs['units'] = units
+        h1['deterministic'].attrs['units'] = units
+        h1['probabilistic'].attrs['units'] = 'percent'
+        for v in h1.data_vars.values():
+            v.attrs['missing'] = missing_value_flag
         Y1 = Y.sel(lead_name=lead_name, drop=True)
         Y1.attrs['missing'] = missing_value_flag
         Y1.attrs['units'] = units
