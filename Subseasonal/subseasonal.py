@@ -815,3 +815,53 @@ def construct_mme(hcsts, Y, fcsts, ensemble, cpt_args, domain_dir):
     nextgen_skill.to_netcdf(outputDir / ('MME_skill_scores.nc'))
 
     return det_fcst, pr_fcst, pev_fcst, nextgen_skill
+
+
+def plot_mme_skill(
+        predictor_names, nextgen_skill, MOS, files_root, skill_metrics
+):
+    graph_orientation = ce.graphorientation(
+        len(nextgen_skill["X"]),
+        len(nextgen_skill["Y"])
+    )
+
+    nleads = len(nextgen_skill['lead_name'])
+    nmetrics = len(skill_metrics)
+    fig, ax = plt.subplots(
+        nrows=nleads,
+        ncols=nmetrics,
+        subplot_kw={"projection": ccrs.PlateCarree()},
+        figsize=(10 * nleads, 1 * nmetrics),
+        squeeze=False,
+    )
+
+    for i, lead_name in enumerate(nextgen_skill['lead_name'].values):
+        for j, skill_metric in enumerate(skill_metrics):
+            metric = SKILL_METRICS[skill_metric]
+            ax[i][j].set_title(skill_metric)
+            n = (
+                nextgen_skill[skill_metric].sel(lead_name=lead_name)
+                .where(lambda x: x > missing_value_flag)
+                .plot(
+                    ax=ax[i][j],
+                    cmap=metric[0],
+                    vmin=metric[1],
+                    vmax=metric[2],
+                    add_colorbar=False,
+                )
+            )
+
+            ax[i][j].coastlines()
+            ax[i][j].add_feature(cartopy.feature.BORDERS)
+            ax[i][j].set_title(skill_metric.upper())
+
+            cb = plt.colorbar(n, orientation=graph_orientation)  # location='bottom')
+            cb.set_label(label=skill_metric, size=15)
+            cb.ax.tick_params(labelsize=12)
+
+    # save plots
+    figName = MOS + "_ensemble_forecast_skillMatrices.png"
+    fig.savefig(
+        files_root / "figures" / figName,
+        bbox_inches="tight",
+    )
