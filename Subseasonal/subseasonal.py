@@ -125,10 +125,12 @@ def download_observations(predictor_names, predictand_name,download_args, files_
             Y = getattr(Y, [i for i in Y.data_vars][0])
             Y = Y.assign_coords(lead_name=f"{lead_low}-{lead_high}")
             lead_slices.append(Y)
-        model_slice = xr.concat(lead_slices, 'lead_name')
-        model_slice = model_slice.assign_coords(model=model)
+        model_slice = (
+            xr.concat(lead_slices, 'lead_name')
+            .rename(None)  # causes combine_by_coords to give us a DataArray instead of DataSet
+        )
         model_slices.append(model_slice)
-    Y = xr.concat(model_slices, 'model')
+    Y = xr.combine_by_coords(model_slices, compat='no_conflicts')
     return Y
 
 
@@ -179,7 +181,7 @@ def evaluate_models(hindcast_data, forecast_data, Y, MOS, cpt_args, domain_dir, 
             if str(MOS).upper() == 'CCA':
                 hindcast1 = hindcast_data.sel(model=model, lead_name=lead_name, drop=True)
                 forecast1 = forecast_data.sel(model=model, lead_name=lead_name, drop=True)
-                Y1 = Y.sel(model=model, lead_name=lead_name, drop=True)
+                Y1 = Y.sel(lead_name=lead_name, drop=True)
                 
                 # fit CCA model between X & Y and produce real-time forecasts for F
                 cca_h, cca_rtf, cca_s, cca_px, cca_py = cc.canonical_correlation_analysis(
@@ -778,7 +780,6 @@ def construct_mme(hcsts, Y, fcsts, ensemble, cpt_args, domain_dir):
     assert fcsts.attrs['units'] == units
 
     hcsts = hcsts.sel(model=ensemble).mean('model')
-    Y = Y.sel(model=ensemble).mean('model')
     fcsts = fcsts.sel(model=ensemble).mean('model')
 
     det_fcst = fcsts['deterministic']
