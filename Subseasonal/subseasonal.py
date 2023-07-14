@@ -865,3 +865,120 @@ def plot_mme_skill(
         files_root / "figures" / figName,
         bbox_inches="tight",
     )
+
+
+def plot_mme_forecasts(
+    cpt_args,
+    predictand_name,
+    pr_fcst,
+    MOS,
+    files_root,
+    det_fcst,
+):
+    missing_value_flag = -999
+    prob_missing_value_flag = -1
+
+    my_dpi = 80
+
+    graph_orientation = ce.graphorientation(
+        len(det_fcst["X"]),
+        len(det_fcst["Y"])
+    )
+
+    if graph_orientation == "horizontal":
+        fig = plt.figure(figsize=(18, 10), dpi=my_dpi)
+    else:
+        fig = plt.figure(figsize=(15, 12), dpi=my_dpi)
+
+    ForTitle, vmin, vmax, barcolor = ce.prepare_canvas(
+        cpt_args["tailoring"], predictand_name
+    )
+    cmapB, cmapN, cmapA = ce.prepare_canvas(None, predictand_name, "probabilistic")
+
+    nleads = len(pr_fcst['lead_name'])
+    for i, lead_name in enumerate(pr_fcst['lead_name']):
+        matplotlibInstance, cartopyInstance = ce.view_probabilistic(
+            pr_fcst.sel(lead_name=lead_name)
+            .where(lambda x: x > prob_missing_value_flag)
+            .rename({"C": "M"})
+            .isel(T=-1)
+            / 100,
+            cmap_an=cmapA,
+            cmap_bn=cmapB,
+            cmap_nn=cmapN,
+            orientation=graph_orientation,
+        )
+
+        cartopyInstance.add_feature(cartopy.feature.BORDERS)
+        cartopyInstance.set_title("")
+        # cartopyInstance.axis("off")
+
+        figName = MOS + "_ensemble_probabilistic-deterministicForecast-lead-{lead_name}.png"
+        plt.savefig(
+            files_root / "figures" / "Test.png",
+            bbox_inches="tight",
+        )
+
+        matplotlibInstance.clf()
+        cartopyInstance.cla()
+
+        ax1 = fig.add_subplot(nleads, 2, 2*i + 1)
+        ax1.set_axis_off()
+        ax1.set_title(MOS + "_ensemble" + " - Probabilistic Forecasts " + ForTitle)
+        pil_img = Image.open(
+            files_root / "figures" / "Test.png"
+        )
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        ax1.imshow(pil_img)
+
+        datart = det_fcst.sel(lead_name=lead_name).where(lambda x: x > missing_value_flag).isel(T=-1)
+        if any(x in predictand_name for x in ["TMAX", "TMIN", "TMEAN", "TMED"]) and i == 0:
+            vmin = round(float(datart.min()) - 0.5 * 2) / 2
+
+        art = datart.plot(
+            figsize=(12, 10),
+            aspect="equal",
+            yincrease=True,
+            # size=45,
+            subplot_kws={"projection": ccrs.PlateCarree()},
+            extend="neither",
+            add_colorbar=False,
+            transform=ccrs.PlateCarree(),
+            cmap=barcolor,
+            vmin=vmin,
+            vmax=vmax,
+        )
+
+        plt.title("")
+        art.axes.coastlines()
+
+        cb = plt.colorbar(art, orientation=graph_orientation)
+        cb.set_label(label=datart.name, size=16)
+        cb.ax.tick_params(labelsize=15)
+
+        art.axes.add_feature(cartopy.feature.BORDERS, edgecolor="black")  # ,linewidth=4.5
+        art.axes.coastlines(edgecolor="black")
+
+        plt.savefig(
+            files_root / "figures" / "Test.png",
+            bbox_inches="tight",
+        )
+
+        ax2 = fig.add_subplot(nleads, 2, 2*i + 2)
+        ax2.set_axis_off()
+        ax2.set_title(MOS + "_ensemble" + " - Deterministic Forecasts " + ForTitle)
+        pil_img = Image.open(
+            files_root / "figures" / "Test.png"
+        )
+        ax2.set_xticks([])
+        ax2.set_yticks([])
+        ax2.imshow(pil_img)
+
+        fig.savefig(
+            files_root / "figures" / figName,
+            bbox_inches="tight",
+        )
+        plt.close()
+
+
