@@ -1,5 +1,6 @@
 import cartopy
 import cartopy.crs as ccrs
+import cartopy.mpl.gridliner as gridliner
 import datetime
 import cptcore as cc
 import cptdl as dl
@@ -11,6 +12,7 @@ import numpy as np
 from PIL import Image
 from pycpt import missing_value_flag, SKILL_METRICS
 from pathlib import Path
+import scipy.stats
 import xarray as xr
 
 hindcasts = {
@@ -982,3 +984,271 @@ def plot_mme_forecasts(
         plt.close()
 
 
+def plot_mme_flex_forecasts(
+    predictand_name,
+    exceedance_prob,
+    point_latitude,
+    point_longitude,
+    predictand_extent,
+    threshold,
+    fcst_scale,
+    climo_scale,
+    fcst_mu,
+    climo_mu,
+    Y2,
+    is_transformed,
+    ntrain,
+    Y,
+    MOS,
+    files_root,
+    color_bar,
+):
+    if point_latitude is None:
+        point_latitude = round(
+            (
+                predictand_extent['south'] +
+                predictand_extent['north']
+            )/2,
+            2
+        )
+    elif (
+            point_latitude  < float(predictand_extent['south'])
+            or
+            point_latitude > float(predictand_extent['north'])
+    ):
+        raise Exception(
+            f"point_latitude {point_latitude} is outside predictor domain "
+            f"{predictand_extent['south']} to "
+            f"{predictand_extent['north']}"
+        )
+
+    if point_longitude is None:
+        point_longitude = round(
+            (
+                predictand_extent['west'] +
+                predictand_extent['east']
+            )/2,
+            2
+        )
+    elif (
+            point_longitude < float(predictand_extent['west'])
+            or
+            point_longitude > float(predictand_extent['east'])
+    ):
+        raise Exception(
+            f"point_longitude {point_longitude} is outside predictor domain "
+            f"{predictand_extent['west']} to "
+            f"{predictand_extent['east']}"
+        )
+
+    graph_orientation = ce.graphorientation(
+        len(Y["X"]),
+        len(Y["Y"])
+    )
+
+    if point_latitude < float(
+        predictand_extent["south"]
+    ) or point_latitude > float(predictand_extent["north"]):
+        point_latitude = round(
+            (
+                predictand_extent["south"]
+                + predictand_extent["north"]
+            )
+            / 2,
+            2,
+        )
+
+    if point_longitude < float(
+        predictand_extent["west"]
+    ) or point_longitude > float(predictand_extent["east"]):
+        point_longitude = round(
+            (
+                predictand_extent["west"]
+                + predictand_extent["east"]
+            )
+            / 2,
+            2,
+        )
+
+    # setting up canvas on which to draw
+
+    ForTitle, vmin, vmax, mark, barcolor = ce.prepare_canvas('POE',predictand_name,user_color=color_bar)
+
+    nleads = len(fcst_mu['lead_name'])
+
+    if graph_orientation == "horizontal":
+        fig = plt.figure(figsize=(15, 10 * nleads))
+    else:
+        fig = plt.figure(figsize=(10, 20 * nleads))
+
+    gs0 = gridspec.GridSpec(4*nleads, 1, figure=fig)
+
+    for i, lead_name in enumerate(fcst_mu['lead_name'].values):
+        # plot exceedance probability map
+        gs00 = gridspec.GridSpecFromSubplotSpec(1, 1, subplot_spec=gs0[i*4:i*4+3])
+        gs11 = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=gs0[i*4+3])
+        gs01 = gridspec.GridSpecFromSubplotSpec(1, 1, subplot_spec=gs11[0])
+        gs02 = gridspec.GridSpecFromSubplotSpec(1, 1, subplot_spec=gs11[1])
+
+        map_ax = fig.add_subplot(gs00[:, :], projection=ccrs.PlateCarree(), aspect="auto")
+        cdf_ax = fig.add_subplot(gs01[:, :], aspect="auto")
+        pdf_ax = fig.add_subplot(gs02[:, :], aspect="auto")
+
+        # plot the map
+        art = exceedance_prob.sel(lead_name=lead_name).transpose("Y", "X", ...).plot(
+            cmap=barcolor, ax=map_ax, vmin=vmin, vmax=vmax
+        )
+        map_ax.scatter(
+            [point_longitude],
+            [point_latitude],
+            marker="x",
+            s=100,
+            color=mark,
+            transform=ccrs.PlateCarree(),
+        )
+        coasts = art.axes.coastlines()
+        art.axes.add_feature(cartopy.feature.BORDERS)
+        gl = map_ax.gridlines(
+                crs=ccrs.PlateCarree(),
+                draw_labels=True,
+                linewidth=1,
+                color='gray',
+                alpha=0.5,
+                linestyle='--'
+            )
+        gl.top_labels = False
+        gl.right_labels = False
+        gl.xformatter = gridliner.LongitudeFormatter()
+        gl.yformatter = gridliner.LatitudeFormatter()
+
+        title = map_ax.set_title("(a) Probabilities of Exceedance")
+
+        # point calculations - select the nearest point to the lat/lon the user wanted to plot curves
+        def point_value(arr):
+            return float(
+                arr
+                .sel(lead_name=lead_name)
+                .sel(X=point_longitude, Y=point_latitude, method="nearest")
+                .item()
+            )
+
+        point_threshold = point_value(threshold)
+        point_fcst_scale = point_value(fcst_scale)
+        point_climo_scale = point_value(climo_scale)
+        point_fcst_mu = point_value(fcst_mu)
+        point_climo_mu = point_value(climo_mu)
+        point_climo = np.squeeze(
+            Y2.sel(lead_name=lead_name)
+            .sel(X=point_longitude, Y=point_latitude, method="nearest")
+            .values
+        )
+        point_climo.sort()
+
+        if is_transformed:
+            point_climo_mu_nontransformed = float(
+                Y.mean("T")
+                .sel(**{"X": point_longitude, "Y": point_latitude}, method="nearest")
+                .values
+            )
+            point_climo_std_nontransformed = float(
+                Y.std("T")
+                .sel(**{"X": point_longitude, "Y": point_latitude}, method="nearest")
+                .values
+            )
+
+        x = point_climo
+        x1 = np.linspace(x.min(), x.max(), 1000)
+        cprobth = (
+            sum(x >= point_threshold) / x.shape[0]
+        )  # round(t.sf(point_threshold, ntrain, loc=point_climo_mu, scale=point_climo_scale),2)
+        fprobth = round(
+            scipy.stats.t.sf(point_threshold, ntrain, loc=point_fcst_mu, scale=point_fcst_scale), 2
+        )
+
+        # POE plot
+        cdf_ax.plot(
+            x,
+            [sum(x >= x[i]) / x.shape[0] for i in range(x.shape[0])],
+            "g-",
+            lw=2,
+            marker="x",
+            alpha=0.8,
+            label="clim (empirical)",
+        )
+        cdf_ax.plot(
+            x1,
+            scipy.stats.t.sf(x1, ntrain, loc=point_fcst_mu, scale=point_fcst_scale),
+            "r-",
+            lw=1,
+            alpha=0.8,
+            label="fcst",
+        )
+        cdf_ax.plot(
+            x1,
+            scipy.stats.norm.sf(x1, loc=point_climo_mu, scale=point_fcst_scale),
+            "b-",
+            lw=1,
+            alpha=0.8,
+            label="clim (fitted)",
+        )
+
+        cdf_ax.plot(point_threshold, fprobth, "ok")
+        cdf_ax.plot(point_threshold, cprobth, "ok")
+        cdf_ax.axvline(x=point_threshold, color="k", linestyle="--")
+        cdf_ax.set_title(" (b) Point Probabilities of Exceedance")
+        cdf_ax.set_xlabel(Y.name.upper())
+        cdf_ax.set_ylabel("Probability (%)")
+        cdf_ax.legend(loc="best", frameon=False)
+
+        # PDF plot
+        fpdf = scipy.stats.t.pdf(x1, ntrain, loc=point_fcst_mu, scale=point_fcst_scale)
+
+        pdf_ax.plot(
+            x1,
+            scipy.stats.norm.pdf(x1, loc=point_climo_mu, scale=point_climo_scale),
+            "b-",
+            alpha=0.8,
+            label="clim (fitted)",
+        )  # clim pdf in blue
+        pdf_ax.plot(x1, fpdf, "r-", alpha=0.8, label="fcst")  # fcst PDF in red
+        pdf_ax.hist(
+            point_climo, density=True, histtype="step", label="clim (empirical)"
+        )  # want this in GREEN
+
+        pdf_ax.axvline(x=point_threshold, color="k", linestyle="--")
+        pdf_ax.legend(loc="best", frameon=False)
+        pdf_ax.set_title("(c) Point Probability Density Functions")
+        pdf_ax.set_xlabel(Y.name.upper())
+        pdf_ax.set_ylabel("")
+
+        if is_transformed:
+            newticks = [-2, -1, 0, 1, 2]
+            pdf_ax.set_xticks(
+                newticks,
+                [
+                    round(
+                        i * point_climo_std_nontransformed + point_climo_mu_nontransformed,
+                        2,
+                    )
+                    for i in newticks
+                ],
+                rotation=0,
+            )
+            cdf_ax.set_xticks(
+                newticks,
+                [
+                    round(
+                        i * point_climo_std_nontransformed + point_climo_mu_nontransformed,
+                        2,
+                    )
+                    for i in newticks
+                ],
+                rotation=0,
+            )
+
+        # save plot
+        figName = MOS + "_flexForecast_probExceedence.png"
+        plt.savefig(
+            files_root / "figures" / figName,
+            bbox_inches="tight",
+        )
