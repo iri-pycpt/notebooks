@@ -94,43 +94,34 @@ def download_hindcasts(predictor_names, download_args, files_root, force_downloa
 
 def download_observations(predictor_names, predictand_name,download_args, files_root, force_download):
     dataDir = files_root / "data"
-    # Separate obs for each model, because issue dates and thus target
-    # periods of different models don't necessarily align.
-    model_slices = []
-    for model in predictor_names:
-        lead_slices = []
-        for lead_low, lead_high in download_args['leads']:
-            basename = f"{model}-{predictand_name}-{lead_low}-{lead_high}"
-            nc_file = dataDir / f"{basename}.nc"
-            tsv_file = dataDir / f"{basename}].tsv"
-            obs_download_args = dict(
-                download_args,
-                day1=lead_low + .5, # TODO .5 is model-specific?
-                day2=lead_high + .5,
-                nday=lead_high - lead_low + 1,
-                obs_source=obs_source, # TODO don't hard-code
-                obsclimo2_source=obsclimo2_source, # ditto
-            )
-            if not nc_file.is_file() or force_download:
-                Y = dl.download(
-                    observations[f"{model}.{predictand_name}"],
-                    tsv_file,
-                    **obs_download_args,
-                    verbose=True,
-                    use_dlauth=False,
-                )
-                Y.to_netcdf(nc_file)
-            else:
-                Y = xr.open_dataset(nc_file)
-            Y = getattr(Y, [i for i in Y.data_vars][0])
-            Y = Y.assign_coords(lead_name=f"{lead_low}-{lead_high}")
-            lead_slices.append(Y)
-        model_slice = (
-            xr.concat(lead_slices, 'lead_name')
-            .rename(None)  # causes combine_by_coords to give us a DataArray instead of DataSet
+    lead_slices = []
+    for lead_low, lead_high in download_args['leads']:
+        basename = f"{predictand_name}-{lead_low}-{lead_high}"
+        nc_file = dataDir / f"{basename}.nc"
+        tsv_file = dataDir / f"{basename}].tsv"
+        obs_download_args = dict(
+            download_args,
+            day1=lead_low + .5, # TODO .5 is model-specific?
+            day2=lead_high + .5,
+            nday=lead_high - lead_low + 1,
+            obs_source=obs_source, # TODO don't hard-code
+            obsclimo2_source=obsclimo2_source, # ditto
         )
-        model_slices.append(model_slice)
-    Y = xr.combine_by_coords(model_slices, compat='no_conflicts')
+        if not nc_file.is_file() or force_download:
+            Y1 = dl.download(
+                observations[f"{predictor_names[0]}.{predictand_name}"],
+                tsv_file,
+                **obs_download_args,
+                verbose=True,
+                use_dlauth=False,
+            )
+            Y1.to_netcdf(nc_file)
+        else:
+            Y1 = xr.open_dataset(nc_file)
+        Y1 = getattr(Y1, [i for i in Y1.data_vars][0])
+        Y1 = Y1.assign_coords(lead_name=f"{lead_low}-{lead_high}")
+        lead_slices.append(Y1)
+    Y = xr.concat(lead_slices, 'lead_name').rename(predictand_name)
     return Y
 
 
