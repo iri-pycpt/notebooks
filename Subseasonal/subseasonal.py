@@ -179,24 +179,6 @@ def evaluate_models(hindcast_data, forecast_data, Y, MOS, cpt_args, domain_dir, 
                     hindcast1, Y1,  F=forecast1, **cpt_args,
                 )
 
-                # fit CCA model again between X & Y, and produce in-sample probabilistic hindcasts
-                # this is using X in place of F, with the year coordinates changed to n+100 years
-                # because CPT does not allow you to make forecasts for in-sample data
-                cca_h, cca_f, cca_s, cca_px, cca_py = cc.canonical_correlation_analysis(
-                    hindcast1, Y1, F=ce.redate(hindcast1, yeardelta=48), **cpt_args
-                )
-
-                cca_h = xr.merge([
-                    cca_h,
-                    ce.redate(cca_f.probabilistic, yeardelta=-48),
-                    ce.redate(cca_f.prediction_error_variance, yeardelta=-48)
-                ])
-
-                # use the in-sample probabilistic hindcasts to perform probabilistic forecast verification
-                # warning - this produces unrealistically optimistic values
-                cca_pfv = cc.probabilistic_forecast_verification(cca_h.probabilistic, Y1, **cpt_args)
-                cca_s = xr.merge([cca_s, cca_pfv])
-
                 hcst_lead_slices.append(cca_h.assign_coords(lead_name=lead_name))
                 fcst_lead_slices.append(cca_rtf.assign_coords(lead_name=lead_name))
                 skill_lead_slices.append(cca_s.where(cca_s > -999, other=np.nan).assign_coords(lead_name=lead_name))
@@ -207,23 +189,6 @@ def evaluate_models(hindcast_data, forecast_data, Y, MOS, cpt_args, domain_dir, 
 
                 # fit PCR model between X & Y and produce real-time forecasts for F
                 pcr_h, pcr_rtf, pcr_s, pcr_px = cc.principal_components_regression(hindcast1, Y1, F=forecast1, **cpt_args)
-
-                # fit PCR model again between X & Y, and produce in-sample probabilistic hindcasts
-                # this is using X in place of F, with the year coordinates changed to n+100 years
-                # because CPT does not allow you to make forecasts for in-sample data
-                pcr_h, pcr_f, pcr_s, pcr_px = cc.principal_components_regression(
-                    hindcast1, Y1, F=ce.redate(hindcast1, yeardelta=48), **cpt_args
-                )
-                pcr_h = xr.merge([
-                    pcr_h,
-                    ce.redate(pcr_f.probabilistic, yeardelta=-48),
-                    ce.redate(pcr_f.prediction_error_variance, yeardelta=-48)
-                ])
-
-                # use the in-sample probabilistic hindcasts to perform probabilistic forecast verification
-                # warning - this produces unrealistically optimistic values
-                pcr_pfv = cc.probabilistic_forecast_verification(pcr_h.probabilistic, Y1, **cpt_args)
-                pcr_s = xr.merge([pcr_s, pcr_pfv])
                 hcst_lead_slices.append(pcr_h.assign_coords(lead_name=lead_name))
                 fcst_lead_slices.append(pcr_rtf.assign_coords(lead_name=lead_name))
                 skill_lead_slices.append(pcr_s.where(pcr_s > -999, other=np.nan).assign_coords(lead_name=lead_name))
