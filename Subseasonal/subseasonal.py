@@ -941,7 +941,7 @@ def plot_mme_forecasts(
         plt.close()
 
 
-def plot_mme_flex_forecasts(
+def plot_flex_forecasts(
     predictand_name,
     exceedance_prob,
     point_latitude,
