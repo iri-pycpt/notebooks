@@ -596,9 +596,17 @@ def plot_forecasts(
         len(fcsts["Y"])
     )
 
-    ForTitle, vmin, vmax, barcolor = ce.prepare_canvas(
-        cpt_args["tailoring"], predictand_name
-    )
+    # colormap for deterministic forecast
+    # TODO don't hard-code
+    ForTitle = 'Precip anomaly (mm)'
+    vmin = fcsts['deterministic'].min().item()
+    vmax = fcsts['deterministic'].max().item()
+    biggest = max(abs(vmin), abs(vmax))
+    vmin = - biggest
+    vmax = biggest
+    barcolor = ce.cmaps['DL_PRCP_ANOMALY']
+
+    # colormap for probabilistic forecast
     cmapB, cmapN, cmapA = ce.prepare_canvas(None, predictand_name, "probabilistic")
 
     iidx = 1
