@@ -609,7 +609,6 @@ def plot_forecasts(
     # colormap for probabilistic forecast
     cmapB, cmapN, cmapA = ce.prepare_canvas(None, predictand_name, "probabilistic")
 
-    iidx = 1
     for i, model in enumerate(fcsts['model'].values):
         for j, lead_name in enumerate(fcsts['lead_name'].values):
             f = fcsts.sel(model=model, lead_name=lead_name)
@@ -631,8 +630,6 @@ def plot_forecasts(
             )
             cartopyInstance.add_feature(cartopy.feature.BORDERS, edgecolor="black")
             cartopyInstance.set_title("")
-            # cartopyInstance.axis("off")
-            allaxes = matplotlibInstance.get_axes()
 
             cartopyInstance.spines["left"].set_color("blue")
 
@@ -653,8 +650,6 @@ def plot_forecasts(
             ax1.set_xticks([])
             ax1.set_yticks([])
             ax1.imshow(pil_img)
-
-            iidx = iidx + 1
 
             datart = (
                 f
@@ -714,8 +709,6 @@ def plot_forecasts(
             ax2.set_xticks([])
             ax2.set_yticks([])
             ax2.imshow(pil_img)  # , aspect=4 1.45 , extent=[0, 1.45, 1.5, 0],
-
-            iidx = iidx + 1
 
             # save plots
             figName = (
