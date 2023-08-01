@@ -13,6 +13,5 @@ jobs:
       - run: |
           hub release create \
           --draft \
-          --include 'Operations/*' \
           ${{ inputs.tag }}
 
