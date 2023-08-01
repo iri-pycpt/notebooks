@@ -1,0 +1,13 @@
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag name starting with v, e.g. v2.0.3
+        type: string
+        required: true
+        
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Releasing ${{ inputs.tag }}"
