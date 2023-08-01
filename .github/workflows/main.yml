@@ -17,4 +17,6 @@ jobs:
           --attach Operations/* \
           --message "${{ inputs.tag }}" \
           "${{ inputs.tag }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
