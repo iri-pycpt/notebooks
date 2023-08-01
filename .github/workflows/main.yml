@@ -11,5 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: hub release create --draft ${{ inputs.tag }}
+      - run: hub release create --draft --message '' "${{ inputs.tag }}"
 
