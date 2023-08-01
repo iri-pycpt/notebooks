@@ -10,4 +10,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - run: which hub; echo "Releasing ${{ inputs.tag }}"
+      - run: |
+          hub release create \
+          --draft \
+          --include 'Operations/*' \
+          ${{ inputs.tag }}
+
