@@ -14,7 +14,8 @@ jobs:
       - run: |
           hub release create \
           --draft \
-          --attach Operations/* \
+          --attach Operations/pycpt-operational.ipynb \
+          --attach Operations/conda-*.lock \
           --message "${{ inputs.tag }}" \
           "${{ inputs.tag }}"
         env:
