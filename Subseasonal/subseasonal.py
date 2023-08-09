@@ -20,12 +20,15 @@ hindcasts = {
 }
 
 observations = {
-    'GEFSv12.PRCP.CHIRPS.PRCP': "https://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/.EMC/.GEFSv12_CPC/.hindcast/.weekly/.pr/S/(0000%206%20Jan%201999)/(0000%2028%20Jun%202017)/RANGEEDGES/L/{day1}/{day2}/RANGEEDGES/L/{nday}/runningAverage/S/({training_season})/VALUES/L/S/add/%5BL/S%5D//T/sampleNDto1D/{obs_source}/Y/{predictand_extent['south']}/{predictand_extent['north']}/RANGE/X/{predictand_extent['west']}/{predictand_extent['east']}/RANGE/{obsclimo2_source}/Y/{predictand_extent['south']}/{predictand_extent['north']}/RANGE/X/{predictand_extent['west']}/{predictand_extent['east']}/RANGE/T/to366daysample/%5BYR%5Daverage/T/sampleDOY/sub/T/%28days%20since%201960-01-01%29/streamgridunitconvert/T/{nday}/runningAverage/c%3A/7.0//units//days/def/%3Ac/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/I/3/-1/roll/.T/replaceGRID/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1700/ensotime/12./16/Jan/2100/ensotime/%3Agrid/use_as_grid/-999/setmissing_value/%5BX/Y%5D%5BT%5Dcptv10.tsv"
+    'GEFSv12.PRCP': "https://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/.EMC/.GEFSv12_CPC/.hindcast/.weekly/.pr/S/(0000%206%20Jan%201999)/(0000%2028%20Jun%202017)/RANGEEDGES/L/{day1}/{day2}/RANGEEDGES/L/{nday}/runningAverage/S/({training_season})/VALUES/L/S/add/%5BL/S%5D//T/sampleNDto1D/{obs_source}/Y/{predictand_extent['south']}/{predictand_extent['north']}/RANGE/X/{predictand_extent['west']}/{predictand_extent['east']}/RANGE/{obsclimo_source}/Y/{predictand_extent['south']}/{predictand_extent['north']}/RANGE/X/{predictand_extent['west']}/{predictand_extent['east']}/RANGE/T/to366daysample/%5BYR%5Daverage/T/sampleDOY/sub/T/%28days%20since%201960-01-01%29/streamgridunitconvert/T/{nday}/runningAverage/c%3A/7.0//units//days/def/%3Ac/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/I/3/-1/roll/.T/replaceGRID/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1700/ensotime/12./16/Jan/2100/ensotime/%3Agrid/use_as_grid/-999/setmissing_value/{'%5BX/Y%5D%5BT%5Dcptv10.tsv' if filetype == 'cptv10.tsv' else 'data.nc'}"
 }
 
-# TODO don't hard-code
-obs_source = 'SOURCES/.UCSB/.CHIRPS/.v2p0/.daily-improved/.global/.0p25/.prcp/X/-180./.5/180./GRID/Y/-90/.5/90/GRID'
-obsclimo2_source = 'SOURCES/.ECMWF/.S2S/.climatologies/.observed/.CHIRPS/.prcpSmooth/X/-180./.5/180./GRID/Y/-90/.5/90/GRID'
+obs_source = {
+    'CHIRPS.PRCP': 'SOURCES/.UCSB/.CHIRPS/.v2p0/.daily-improved/.global/.0p25/.prcp/X/-180./.5/180./GRID/Y/-90/.5/90/GRID',
+}
+obsclimo_source = {
+    'CHIRPS.PRCP': 'SOURCES/.ECMWF/.S2S/.climatologies/.observed/.CHIRPS/.prcpSmooth/X/-180./.5/180./GRID/Y/-90/.5/90/GRID',
+}
 
 monthabbrevs = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -104,8 +107,8 @@ def download_observations(predictor_names, predictand_name,download_args, files_
             day1=lead_low + .5, # TODO .5 is model-specific?
             day2=lead_high + .5,
             nday=lead_high - lead_low + 1,
-            obs_source=obs_source, # TODO don't hard-code
-            obsclimo2_source=obsclimo2_source, # ditto
+            obs_source=obs_source[predictand_name],
+            obsclimo_source=obsclimo_source[predictand_name],
         )
         if not nc_file.is_file() or force_download:
             Y1 = dl.download(
