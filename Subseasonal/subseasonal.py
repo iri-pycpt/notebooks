@@ -186,13 +186,7 @@ def evaluate_models(hindcast_data, forecast_data, Y, MOS, cpt_args, domain_dir, 
                 py_lead_slices.append(cca_py.assign_coords(lead_name=lead_name))
 
             elif str(MOS).upper() == 'PCR':
-
-                # fit PCR model between X & Y and produce real-time forecasts for F
-                pcr_h, pcr_rtf, pcr_s, pcr_px = cc.principal_components_regression(hindcast1, Y1, F=forecast1, **cpt_args)
-                hcst_lead_slices.append(pcr_h.assign_coords(lead_name=lead_name))
-                fcst_lead_slices.append(pcr_rtf.assign_coords(lead_name=lead_name))
-                skill_lead_slices.append(pcr_s.where(pcr_s > -999, other=np.nan).assign_coords(lead_name=lead_name))
-                pxs_lead_slices.append(pcr_px.assign_coords(lead_name=lead_name))
+                raise Exception('PCR not yet implemented for subseasonal')
             else:
                 # simply compute deterministic skill scores of non-corrected ensemble means
                 nomos_skill = cc.deterministic_skill(hindcast1, Y1, **cpt_args)
@@ -208,10 +202,7 @@ def evaluate_models(hindcast_data, forecast_data, Y, MOS, cpt_args, domain_dir, 
                 cca_px.to_netcdf(outputDir / (basename + '_cca_x_spatial_loadings.nc'))
                 cca_py.to_netcdf(outputDir / (basename + '_cca_y_spatial_loadings.nc'))
             elif str(MOS).upper() == 'PCR':
-                pcr_h.to_netcdf(outputDir /  (basename + '_crossvalidated_pcr_hindcasts.nc'))
-                pcr_rtf.to_netcdf(outputDir / (basename + '_realtime_pcr_forecasts.nc'))
-                pcr_s.to_netcdf(outputDir / (basename + '_skillscores_pcr.nc'))
-                pcr_px.to_netcdf(outputDir / (basename + '_pcr_x_spatial_loadings.nc'))
+                raise Exception('PCR not yet implemented for subseasonal')
             else:
                 nomos_skill.to_netcdf(outputDir / (basename + '_nomos_skillscores.nc'))
             
@@ -412,56 +403,7 @@ def plot_eof_modes(
                     figName = MOS + "_" + str(model) + "_EOF_mode_" + str(int(mode)) + ".png"
                     fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
     elif MOS == "PCR":
-        # TODO update PCR mode for multi-lead
-        for i, model in enumerate(predictor_names):
-            for mode in range(nmodes):
-                print(model.upper() + " - MODE {}".format(mode + 1))
-                # print(model.upper() + ': EOF {}'.format(mode+1)  +' = '+ str(truncate(cancorr[0], 2)))
-                fig = plt.figure(figsize=(20, 5))
-                gs0 = gridspec.GridSpec(1, 3, figure=fig)
-                gs00 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=gs0[0])
-                gs01 = gridspec.GridSpecFromSubplotSpec(5, 10, subplot_spec=gs0[1])
-                gs02 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=gs0[2])
-                ts = xr.concat(
-                    [pxs[i].x_eof_scores.isel(Mode=mode)], "M"
-                ).assign_coords({"M": ["x"]})
-
-                map1_ax = fig.add_subplot(gs00[:, :], projection=ccrs.PlateCarree())
-                ts_ax = fig.add_subplot(gs01[1:3, 1:])
-                map2_ax = fig.add_subplot(gs02[:, :], projection=ccrs.PlateCarree())
-
-                (
-                    pxs[i]
-                    .x_eof_loadings.isel(Mode=mode)
-                    .where(pxs[i].x_eof_loadings.isel(Mode=mode) > missing_value_flag)
-                    .plot(ax=map1_ax, cmap=cmap)
-                )
-
-                primitive = ts.plot.line(
-                    marker="x", ax=ts_ax, markersize=12, hue="M", add_legend=False
-                )
-                ts_ax.grid(axis="x", linestyle="-.")
-                ts_ax.legend(
-                    handles=primitive, labels=list(ts.coords["M"].values), loc="best"
-                )
-                ts_ax.spines["top"].set_visible(False)
-                ts_ax.spines["right"].set_visible(False)
-                ts_ax.spines["bottom"].set_visible(False)
-                ts_ax.set_title("EOF Scores (Mode {})".format(mode + 1))
-                ts_ax.set_ylabel(None)
-                ts_ax.set_xlabel(None)
-
-                map1_ax.set_title("X EOF MODE {}".format(mode + 1))
-                # map2_ax.set_title('Y EOF MODE {}'.format(mode+1))
-
-                map1_ax.coastlines()
-                map1_ax.add_feature(cartopy.feature.BORDERS)
-                # map2_ax.coastlines()
-                plt.show()
-
-                # save plots
-                figName = MOS + "_" + str(model) + "_EOF_mode_" + str(mode + 1) + ".png"
-                fig.savefig(files_root / "figures" / figName, bbox_inches="tight")
+        raise Exception('PCR not yet implemented for subseasonal')
     else:
         print("You will need to set MOS=CCA in order to see CCA Modes")
 
