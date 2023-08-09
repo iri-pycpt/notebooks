@@ -243,7 +243,7 @@ def plot_skill(skill, MOS, files_root, skill_metrics):
             nrows=nrows,
             ncols=ncols,
             subplot_kw={"projection": cartopy.crs.PlateCarree()},
-            figsize=(5 * nrows, 2.5 * ncols),
+            figsize=(8, 2 * nrows),
             squeeze=False,
         )
         metric = SKILL_METRICS[metric_name]
