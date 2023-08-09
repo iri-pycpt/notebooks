@@ -540,7 +540,6 @@ def plot_forecasts(
 
     # colormap for deterministic forecast
     # TODO don't hard-code
-    ForTitle = 'Precip anomaly (mm)'
     vmin = fcsts['deterministic'].min().item()
     vmax = fcsts['deterministic'].max().item()
     biggest = max(abs(vmin), abs(vmax))
@@ -585,7 +584,8 @@ def plot_forecasts(
 
             ax1 = fig.add_subplot(2, 2, 1)
             ax1.set_axis_off()
-            ax1.set_title(f"{model.upper()} - Probabilistic Forecasts Lead {lead_name} {ForTitle}")
+            prob_var_desc = 'Dominant Tercile Probability' # todo don't hard-code
+            ax1.set_title(f"{model.upper()} - Probabilistic Forecast {lead_name}\n{prob_var_desc}")
             pil_img = Image.open(
                 files_root / "figures" / "Test.png"
             )
@@ -644,7 +644,8 @@ def plot_forecasts(
             ax2 = fig.add_subplot(2, 2, 2)
             ax2.set_axis_off()
 
-            ax2.set_title(f"{model.upper()} - Deterministic Forecasts Lead {lead_name} {ForTitle}")
+            det_var_desc = 'Precip Anomaly (mm)'  # todo don't hard-code
+            ax2.set_title(f"{model.upper()} - Deterministic Forecast {lead_name}\n{det_var_desc}")
             pil_img = Image.open(
                 files_root / "figures" / "Test.png"
             )
@@ -655,7 +656,7 @@ def plot_forecasts(
             # save plots
             figName = (
                 MOS
-                + ForTitle.replace(" ", "_")
+                + det_var_desc.replace(" ", "_")
                 + "["
                 + model
                 + "]"
