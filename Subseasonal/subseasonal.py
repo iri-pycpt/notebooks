@@ -978,7 +978,7 @@ def plot_flex_forecasts(
     nleads = len(fcst_mu['lead_name'])
 
     if graph_orientation == "horizontal":
-        fig = plt.figure(figsize=(15, 10 * nleads))
+        fig = plt.figure(figsize=(15, 20 * nleads))
     else:
         fig = plt.figure(figsize=(10, 20 * nleads))
 
@@ -1022,7 +1022,7 @@ def plot_flex_forecasts(
         gl.xformatter = gridliner.LongitudeFormatter()
         gl.yformatter = gridliner.LatitudeFormatter()
 
-        title = map_ax.set_title("(a) Probabilities of Exceedance")
+        title = map_ax.set_title(f"Probability of Exceedance {lead_name}")
 
         # point calculations - select the nearest point to the lat/lon the user wanted to plot curves
         def point_value(arr):
@@ -1096,7 +1096,7 @@ def plot_flex_forecasts(
         cdf_ax.plot(point_threshold, fprobth, "ok")
         cdf_ax.plot(point_threshold, cprobth, "ok")
         cdf_ax.axvline(x=point_threshold, color="k", linestyle="--")
-        cdf_ax.set_title(" (b) Point Probabilities of Exceedance")
+        cdf_ax.set_title(f"Point Probabilities of Exceedance {lead_name}")
         cdf_ax.set_xlabel(Y.name.upper())
         cdf_ax.set_ylabel("Probability (%)")
         cdf_ax.legend(loc="best", frameon=False)
@@ -1118,7 +1118,7 @@ def plot_flex_forecasts(
 
         pdf_ax.axvline(x=point_threshold, color="k", linestyle="--")
         pdf_ax.legend(loc="best", frameon=False)
-        pdf_ax.set_title("(c) Point Probability Density Functions")
+        pdf_ax.set_title(f"Point Probability Density Functions {lead_name}")
         pdf_ax.set_xlabel(Y.name.upper())
         pdf_ax.set_ylabel("")
 
