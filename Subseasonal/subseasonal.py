@@ -532,6 +532,9 @@ def plot_forecasts(
     MOS,
     cpt_args,
     files_root,
+    color_bar=None,
+    vmin=None,
+    vmax=None,
 ):
     prob_missing_value_flag = -1
     my_dpi = 100
@@ -542,13 +545,13 @@ def plot_forecasts(
     )
 
     # colormap for deterministic forecast
-    # TODO don't hard-code
-    vmin = fcsts['deterministic'].min().item()
-    vmax = fcsts['deterministic'].max().item()
-    biggest = max(abs(vmin), abs(vmax))
-    vmin = - biggest
-    vmax = biggest
-    barcolor = ce.cmaps['DL_PRCP_ANOMALY']
+    det_title, vmin_auto, vmax_auto, barcolor = ce.prepare_canvas(
+        cpt_args["tailoring"],
+        predictand_name,
+        user_color=color_bar,
+        user_vmin=vmin,
+        user_vmax=vmax
+    )
 
     # colormap for probabilistic forecast
     cmapB, cmapN, cmapA = ce.prepare_canvas(None, predictand_name, "probabilistic")
