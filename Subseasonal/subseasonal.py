@@ -309,7 +309,7 @@ def plot_eof_modes(
                             loadings.max().item(),
                         )
 
-                    print(f"{model.upper()} lead {lead_name}: EOF {int(mode)}")
+                    print(f"{model.upper()} {lead_name}: EOF {int(mode)}")
 
                     fig = plt.figure(figsize=(20, 5))
 
@@ -442,7 +442,7 @@ def plot_cca_modes(
                         py['y_cca_scores'].sel(Mode=mode),
                     )
                     print(
-                        f"{model.upper()} lead {lead_name}: CCA MODE {int(mode)}"
+                        f"{model.upper()} {lead_name}: CCA MODE {int(mode)}"
                         f" - Canonical Correlation = {ce.truncate(cancorr[0], 2)}"
                     )
 
