@@ -590,8 +590,8 @@ def plot_forecasts(
 
             ax1 = fig.add_subplot(2, 2, 1)
             ax1.set_axis_off()
-            prob_var_desc = 'Dominant Tercile Probability' # todo don't hard-code
-            ax1.set_title(f"{model.upper()} - Probabilistic Forecast {lead_name}\n{prob_var_desc}")
+            prob_var_desc = 'Dominant Tercile Probability'
+            ax1.set_title(f"{model.upper()} - Probabilistic Forecast {lead_name}")
             pil_img = Image.open(
                 files_root / "figures" / "Test.png"
             )
@@ -650,8 +650,7 @@ def plot_forecasts(
             ax2 = fig.add_subplot(2, 2, 2)
             ax2.set_axis_off()
 
-            det_var_desc = 'Precip Anomaly (mm)'  # todo don't hard-code
-            ax2.set_title(f"{model.upper()} - Deterministic Forecast {lead_name}\n{det_var_desc}")
+            ax2.set_title(f"{model.upper()} - Deterministic Forecast {lead_name}")
             pil_img = Image.open(
                 files_root / "figures" / "Test.png"
             )
@@ -662,7 +661,7 @@ def plot_forecasts(
             # save plots
             figName = (
                 MOS
-                + det_var_desc.replace(" ", "_")
+                + "var"
                 + "["
                 + model
                 + "]"
