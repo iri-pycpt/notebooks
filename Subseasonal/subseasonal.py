@@ -65,7 +65,7 @@ def download_hindcasts(predictor_names, download_args, files_root, force_downloa
     model_slices = []
     for model in predictor_names:
         lead_slices = []
-        for lead_low, lead_high in download_args['leads']:
+        for lead_name, lead_low, lead_high in download_args['leads']:
             basename = f"{model}-{lead_low}-{lead_high}"
             nc_file = dataDir / f"{basename}.nc"
             tsv_file = dataDir / f"{basename}].tsv"
@@ -87,7 +87,7 @@ def download_hindcasts(predictor_names, download_args, files_root, force_downloa
             else:
                 X = xr.open_dataset(nc_file)
             X = getattr(X, [i for i in X.data_vars][0])
-            X = X.assign_coords(lead_name=f"{lead_low}-{lead_high}")
+            X = X.assign_coords(lead_name=lead_name)
             lead_slices.append(X)
         model_slice = xr.concat(lead_slices, 'lead_name')
         model_slice = model_slice.assign_coords(model=model)
@@ -98,7 +98,7 @@ def download_hindcasts(predictor_names, download_args, files_root, force_downloa
 def download_observations(predictor_names, predictand_name,download_args, files_root, force_download):
     dataDir = files_root / "data"
     lead_slices = []
-    for lead_low, lead_high in download_args['leads']:
+    for lead_name, lead_low, lead_high in download_args['leads']:
         basename = f"{predictand_name}-{lead_low}-{lead_high}"
         nc_file = dataDir / f"{basename}.nc"
         tsv_file = dataDir / f"{basename}].tsv"
@@ -122,7 +122,7 @@ def download_observations(predictor_names, predictand_name,download_args, files_
         else:
             Y1 = xr.open_dataset(nc_file)
         Y1 = getattr(Y1, [i for i in Y1.data_vars][0])
-        Y1 = Y1.assign_coords(lead_name=f"{lead_low}-{lead_high}")
+        Y1 = Y1.assign_coords(lead_name=lead_name)
         lead_slices.append(Y1)
     Y = xr.concat(lead_slices, 'lead_name').rename(predictand_name)
     return Y
@@ -134,7 +134,7 @@ def download_forecasts(predictor_names, download_args, files_root, force_downloa
     fdate = download_args['fdate']
     for model in predictor_names:
         lead_slices = []
-        for lead_low, lead_high in download_args['leads']:
+        for lead_name, lead_low, lead_high in download_args['leads']:
             basename = f"{model}-{fdate.year}-{fdate.month}-{fdate.day}-L{lead_low}-{lead_high}"
             nc_file = dataDir / f"{basename}.nc"
             tsv_file = dataDir / f"{basename}].tsv"
@@ -157,7 +157,7 @@ def download_forecasts(predictor_names, download_args, files_root, force_downloa
             else:
                 F = xr.open_dataset(nc_file)
             F = getattr(F, [i for i in F.data_vars][0])
-            F = F.assign_coords(lead_name=f"{lead_low}-{lead_high}")
+            F = F.assign_coords(lead_name=lead_name)
             lead_slices.append(F)
         model_slice = xr.concat(lead_slices, 'lead_name')
         model_slice = model_slice.assign_coords(model=model)
