@@ -19,7 +19,7 @@ hindcasts = {
     'GEFSv12.PRCP': "https://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/.EMC/.GEFSv12_CPC/.hindcast/.weekly/.pr/S/(0000%206%20Jan%201999)/(0000%2028%20Jun%202017)/RANGEEDGES/S/(days%20since%201999-01-01)/streamgridunitconvert/Y/{predictor_extent['south']}/{predictor_extent['north']}/RANGE/X/{predictor_extent['west']}/{predictor_extent['east']}/RANGE/L/{day1}/{day2}/RANGEEDGES/%5BM%5Daverage/L/{nday}/runningAverage/SOURCES/.Models/.SubX/.EMC/.GEFSv12_CPC/.hindcast/.dc0018/.pr/Y/{predictor_extent['south']}/{predictor_extent['north']}/RANGE/L/{day1}/{day2}/RANGEEDGES/L/{nday}/runningAverage/S/to366daysample/%5BYR%5Daverage/S/sampleDOY/sub/S/({training_season})/VALUES/L/removeGRID/S/(T)/renameGRID/c%3A/0.001/(m3%20kg-1)/%3Ac/mul/c%3A/1000/(mm%20m-1)/%3Ac/mul/c%3A/7.0//units//days/def/%3Ac/mul/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1700/ensotime/12./16/Jan/2100/ensotime/%3Agrid/use_as_grid/T//pointwidth/1/def/pop//name/(tp)/def//units/(mm)/def//long_name/(precipitation_amount)/def/-999/setmissing_value/{'%5BX/Y%5D%5BT%5Dcptv10.tsv' if filetype == 'cptv10.tsv' else 'data.nc'}",
 }
 
-observations = {
+obs_template = {
     'GEFSv12.PRCP': "https://iridl.ldeo.columbia.edu/SOURCES/.Models/.SubX/.EMC/.GEFSv12_CPC/.hindcast/.weekly/.pr/S/(0000%206%20Jan%201999)/(0000%2028%20Jun%202017)/RANGEEDGES/L/{day1}/{day2}/RANGEEDGES/L/{nday}/runningAverage/S/({training_season})/VALUES/L/S/add/%5BL/S%5D//T/sampleNDto1D/{obs_source}/Y/{predictand_extent['south']}/{predictand_extent['north']}/RANGE/X/{predictand_extent['west']}/{predictand_extent['east']}/RANGE/{obsclimo_source}/Y/{predictand_extent['south']}/{predictand_extent['north']}/RANGE/X/{predictand_extent['west']}/{predictand_extent['east']}/RANGE/T/to366daysample/%5BYR%5Daverage/T/sampleDOY/sub/T/%28days%20since%201960-01-01%29/streamgridunitconvert/T/{nday}/runningAverage/c%3A/7.0//units//days/def/%3Ac/mul/T/2/index/.T/SAMPLE/nip/dup/T/npts//I/exch/NewIntegerGRID/replaceGRID/I/3/-1/roll/.T/replaceGRID/grid%3A//name/(T)/def//units/(months%20since%201960-01-01)/def//standard_name/(time)/def//pointwidth/1/def/16/Jan/1700/ensotime/12./16/Jan/2100/ensotime/%3Agrid/use_as_grid/-999/setmissing_value/{'%5BX/Y%5D%5BT%5Dcptv10.tsv' if filetype == 'cptv10.tsv' else 'data.nc'}"
 }
 
@@ -121,7 +121,7 @@ def download_observations(predictor_names, predictand_name,download_args, files_
         )
         if not nc_file.is_file() or force_download:
             Y1 = dl.download(
-                observations[f"{predictor_names[0]}.{predictand_name}"],
+                obs_template[f"{predictor_names[0]}"],
                 tsv_file,
                 **obs_download_args,
                 verbose=True,
