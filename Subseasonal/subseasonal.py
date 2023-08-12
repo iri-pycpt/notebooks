@@ -264,7 +264,13 @@ def plot_skill(skill, MOS, files_root, skill_metrics):
                 (
                     skill[metric_name].sel(model=model, lead_name=lead_name)
                     .where(lambda x: x > missing_value_flag)
-                    .plot(ax=ax[i][j], cmap=metric[0], vmin=metric[1], vmax=metric[2])
+                    .plot(
+                        ax=ax[i][j],
+                        cmap=metric[0],
+                        vmin=metric[1],
+                        vmax=metric[2],
+                        # colorbar only on last (rightmost) plot
+                        add_colorbar=j == len(skill['lead_name']) - 1)
                 )
                 ax[i][j].coastlines()
                 ax[i][j].add_feature(cartopy.feature.BORDERS)
