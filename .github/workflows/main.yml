@@ -15,6 +15,7 @@ jobs:
           sparse-checkout: |
             Operations/pycpt-operational.ipynb
             Operations/conda-*.lock
+            Subseasonal/pycpt-s2s.ipynb
           sparse-checkout-cone-mode: false
       - run: |
           hub release create \
