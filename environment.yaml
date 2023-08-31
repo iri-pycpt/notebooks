@@ -3,7 +3,12 @@ channels:
   - iri-nextgen
   - conda-forge
 dependencies:
-  - pycpt=2.4.1
+  - pycpt=2.5.0
+
+  # cptdl requires python 3.8. This constraint really belongs on
+  # cptdl, but I'm not building a new package just to add that
+  # constraint.
+  - python>=3.8
 
   # These are dependencies of pycpt, so would be included anyway, but
   # listing them explicitly allows them to be updated with conda lock
