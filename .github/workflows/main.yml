@@ -20,6 +20,7 @@ jobs:
           hub release create \
           --draft \
           --attach Operations/pycpt-operational.ipynb \
+          --attach Subseasonal/pycpt-s2s.ipynb \
           --attach Operations/conda-win-64.lock \
           --attach Operations/conda-osx-64.lock \
           --attach Operations/conda-linux-64.lock \
