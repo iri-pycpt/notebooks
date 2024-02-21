@@ -18,15 +18,14 @@ jobs:
             Subseasonal/pycpt-s2s.ipynb
           sparse-checkout-cone-mode: false
       - run: |
-          hub release create \
+          gh release create \
           --draft \
-          --attach Operations/pycpt-operational.ipynb \
-          --attach Subseasonal/pycpt-s2s.ipynb \
-          --attach Operations/conda-win-64.lock \
-          --attach Operations/conda-osx-64.lock \
-          --attach Operations/conda-linux-64.lock \
-          --message "${{ inputs.tag }}" \
           "${{ inputs.tag }}"
+          Operations/pycpt-operational.ipynb \
+          Subseasonal/pycpt-s2s.ipynb \
+          Operations/conda-win-64.lock \
+          Operations/conda-osx-64.lock \
+          Operations/conda-linux-64.lock
         env:
           GITHUB_TOKEN: "${{ github.token }}"
 
