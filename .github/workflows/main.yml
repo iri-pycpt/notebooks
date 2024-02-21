@@ -20,7 +20,7 @@ jobs:
       - run: |
           gh release create \
           --draft \
-          "${{ inputs.tag }}"
+          "${{ inputs.tag }}" \
           Operations/pycpt-operational.ipynb \
           Subseasonal/pycpt-s2s.ipynb \
           Operations/conda-win-64.lock \
