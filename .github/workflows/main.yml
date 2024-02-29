@@ -18,6 +18,7 @@ jobs:
             Subseasonal/pycpt-s2s.ipynb
           sparse-checkout-cone-mode: false
       - run: |
+          pwd && find . && \
           gh release create \
           --draft \
           "${{ inputs.tag }}" \
