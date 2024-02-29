@@ -13,12 +13,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           sparse-checkout: |
-            Operations/pycpt-operational.ipynb
-            Operations/conda-*.lock
+            Operations/*
             Subseasonal/pycpt-s2s.ipynb
           sparse-checkout-cone-mode: false
       - run: |
-          pwd && find . && \
           gh release create \
           --draft \
           "${{ inputs.tag }}" \
