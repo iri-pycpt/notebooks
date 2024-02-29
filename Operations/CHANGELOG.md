@@ -1,5 +1,9 @@
 # Release notes for PyCPT conda environment
 
+## PyCPT 2.6.2
+- No backwards-incompatible changes. Notebooks designed for 2.5.1 and later can be used without modification.
+- Added pycpt-operational.py
+
 ## PyCPT 2.6.1
 - No backwards-incompatible changes. Notebooks designed for 2.5.1 and later can be used without modification.
 - `convert_np64_datetime` now works on Windows, even for dates prior to the epoch.
