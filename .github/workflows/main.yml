@@ -22,6 +22,7 @@ jobs:
           --draft \
           "${{ inputs.tag }}" \
           Operations/pycpt-operational.ipynb \
+          Operations/pycpt-operational.py \
           Subseasonal/pycpt-s2s.ipynb \
           Operations/conda-win-64.lock \
           Operations/conda-osx-64.lock \
