@@ -1,5 +1,9 @@
 # Release notes for PyCPT conda environment
 
+## PyCPT 2.7.0
+- Added generate-forecasts and upload-forecasts scripts. Jupyter Notebook is now only for experimentation, not for operational use.
+- Removed pycpt-operational.py, replaced by generate-forecasts script.
+
 ## PyCPT 2.6.2
 - No backwards-incompatible changes. Notebooks designed for 2.5.1 and later can be used without modification.
 - Added pycpt-operational.py
