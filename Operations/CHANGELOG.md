@@ -1,5 +1,8 @@
 # Release notes for PyCPT conda environment
 
+## PyCPT 2.7.3
+- Fixed failure in generate-forecasts when temp directory and output directory are on different filesystems
+
 ## PyCPT 2.7.2
 - Added generate-forecasts and upload-forecasts scripts. Jupyter Notebook is now only for experimentation, not for operational use.
 - Removed pycpt-operational.py, replaced by generate-forecasts script.
