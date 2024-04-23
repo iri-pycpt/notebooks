@@ -1,5 +1,8 @@
 # Release notes for PyCPT conda environment
 
+## v2.8.2
+- cpt-dl dataset additions: OISST2p1, NNRP.UA, NNRP.VA, CESM1.PRCP
+
 ## v2.8.1
 - Renamed generate-forecasts to generate-forecasts-from-config, resolving name collision with a script on Data Library servers.
 - Added optional download arguments `target_first_year`, `target_final_year`. Whereas `first_year`/`final_year` refer to the year of the forecast initialization, `target_first_year`/`target_final_year` refer to the year of the midpoint of the target season. `first_year` and `final_year` are deprecated and may be removed in a future version.
