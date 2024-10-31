@@ -8,9 +8,3 @@ dependencies:
   - pycpt=2.9.0
   - cptbin=17.8.3
   - cptio=1.3.0
-
-  # libgfortran5 v13.3.0 and 14.2.0 cause CPT to crash on startup.
-  # TODO get these constraints onto the cptbin package, and/or
-  # fix CPT.
-  - libgfortran5=13.2.0
-  - libgcc-ng=13.2.0
