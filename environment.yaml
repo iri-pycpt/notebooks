@@ -1,13 +1,16 @@
 name: pycpt
 channels:
+  - iri-nextgen/label/dev # TODO remove
   - iri-nextgen
   - conda-forge
+  - nodefaults
 dependencies:
   - pycpt=2.9.0
-
-  # These are dependencies of pycpt, so would be included anyway, but
-  # listing them explicitly allows them to be updated with conda lock
-  # update. This is a workaround for
-  # https://github.com/conda/conda-lock/issues/370
   - cptbin=17.8.3
   - cptio=1.3.0
+
+  # libgfortran5 v13.3.0 and 14.2.0 cause CPT to crash on startup.
+  # TODO get these constraints onto the cptbin package, and/or
+  # fix CPT.
+  - libgfortran5=13.2.0
+  - libgcc-ng=13.2.0
