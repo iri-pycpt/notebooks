@@ -60,8 +60,8 @@ cpt_args = {
     'x_eof_modes': (1,8),
     'y_eof_modes': (1,6),
     'validation': 'crossvalidation',
-    'drymask': False,
-    'scree': True,
+    'drymask_threshold': None,
+    'skillmask_threshold': None,
     'crossvalidation_window': 3,
     'synchronous_predictors': True,
 }
