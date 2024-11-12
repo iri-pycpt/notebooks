@@ -10,7 +10,10 @@
 ### Data catalog changes
 - Fix `GEFSv12.PRCP` hindcast URL, which was missing longitude constraint.
 - Fix `CCSM4.TMIN` URL, which pointed to TMAX rather than TMIN.
-- New datasets added to the catalog: `SPEARb.SST` (corrects errors in `SPEAR.SST`), `SEAS51b` (corrects errors in `SEAS51`).
+- New datasets added to the catalog:
+  - `SPEARb.SST` (corrects errors in `SPEAR.SST`)
+  - `SEAS51b` (corrects errors in `SEAS51`)
+  - `CanSIPSIC4.T2M`
 ### Other
 - Dependencies have been updated. Notably, jupyter notebook was updated to version 7, which entails changes to the user interface, e.g. some menu items have moved around.
 - The function `plot_mme_skill` now supports the same skill core names as `plot_skill`. Previously, they used different names for the same score, e.g. `2afc` vs. `two_alternative_forced_choice`. The old names are still accepted in order not to break existing notebooks.
