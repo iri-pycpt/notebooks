@@ -1,5 +1,12 @@
 # Release notes for PyCPT conda environment
 
+## v2.9.2
+- Fix generate-forecasts-from-config, which was broken in 2.9.0.
+- Make `root_mean_squared_error` available for MME as well as for individual models
+
+## v2.9.1
+- Bug fix: write forecast plots for different models to different files
+
 ## v2.9.0
 ### New functionality
 - Add support for weather station data.
