@@ -66,14 +66,6 @@ cpt_args = {
     'synchronous_predictors': True,
 }
 
-# Initializations for which we need to generate the forecast by hand,
-# e.g. because one of the models isn't available.
-skip_issue_dates = [
-    dt.datetime(2020, 12, 1),
-    dt.datetime(2021, 1, 1),
-    dt.datetime(2021, 2, 1),
-]
-
 # Information about a remote server to which forecasts will be
 # uploaded. You will have a chance to look at the forecasts before
 # they are uploaded. If you don't plan to run 
