@@ -1,5 +1,16 @@
 # Release notes for PyCPT conda environment
 
+## v2.10.0
+### New functionality
+- PyCPT no longer requires model outputs to be available for all models for all years of the training period. If a model is missing for a given year, its climatology will be used.
+- The notebook now displays a table of which model is available for which years.
+### Data catalog changes
+- `SEAS51c` corrects errors in `SEAS51b`
+- Added `METEOFRANCE9`
+- Removed non-working dataset `AER04`
+### Other
+- Now managing development environment with pixi, and building packages with pixi-build.
+
 ## v2.9.2
 - Fix generate-forecasts-from-config, which was broken in 2.9.0.
 - Make `root_mean_squared_error` available for MME as well as for individual models
