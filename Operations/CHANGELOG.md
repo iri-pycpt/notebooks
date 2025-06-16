@@ -1,5 +1,8 @@
 # Release notes for PyCPT conda environment
 
+## v2.10.1
+- Fixed typo in Mac environment file
+
 ## v2.10.0
 ### New functionality
 - PyCPT no longer requires model outputs to be available for all models for all years of the training period. If a model is missing for a given year, its climatology will be used.
