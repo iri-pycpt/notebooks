@@ -1,5 +1,8 @@
 # Release notes for PyCPT conda environment
 
+## v2.10.2
+- Fixed typo in Mac environment file again
+
 ## v2.10.1
 - Fixed typo in Mac environment file
 
