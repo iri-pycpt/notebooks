@@ -1,5 +1,8 @@
 # Release notes for PyCPT conda environment
 
+## v2.10.4
+- T2M is now recognized as a temperature variable, for the purposes of choosing the colorscale for charts.
+
 ## v2.10.2
 - Fixed typo in Mac environment file again
 
